@@ -1,0 +1,4349 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SafePay - Khiên An Toàn Mua Trước Trả Sau</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #0b1329;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      color: #1e293b;
+    }
+
+    /* Khung điện thoại giả lập iPhone */
+    .phone-container {
+      width: 390px;
+      height: 750px;
+      background: #ffffff;
+      border-radius: 46px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 10px #1e293b, 0 0 0 14px #334155;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Notch tai thỏ */
+    .notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 160px;
+      height: 28px;
+      background: #1e293b;
+      border-bottom-left-radius: 18px;
+      border-bottom-right-radius: 18px;
+      z-index: 100;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 44px;
+      padding: 10px 24px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      z-index: 90;
+      color: #0f172a;
+      flex-shrink: 0;
+    }
+
+    /* Màn hình với cơ chế cuộn mượt và đệm đáy 140px để KHÔNG BAO GIỜ BỊ CHE */
+    .screen {
+      display: none !important;
+      flex: 1;
+      overflow-y: scroll;
+      overflow-x: hidden;
+      flex-direction: column;
+      position: relative;
+      padding-bottom: 140px !important;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .screen.active {
+      display: flex !important;
+    }
+
+    /* Tùy chỉnh thanh cuộn thanh mảnh, dễ nhìn */
+    .screen::-webkit-scrollbar {
+      width: 5px;
+    }
+    .screen::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .screen::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.4);
+      border-radius: 10px;
+    }
+    .screen::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.7);
+    }
+
+    
+    /* ================= SCREEN 2: CONNECT ACCOUNTS ================= */
+    .connect-screen {
+      padding: 10px 20px 24px;
+      background: #f8fafc;
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .back-btn {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #1e293b;
+      padding: 4px;
+    }
+
+    .screen-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .screen-desc {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .account-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 18px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      background: white;
+      transition: all 0.2s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .account-card:hover {
+      border-color: #3b82f6;
+      background: #f0f7ff;
+    }
+
+    .account-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .acc-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    .acc-icon.spay { background: #fff1f0; color: #ee4d2d; border: 1px solid #ffd8d6; }
+    .acc-icon.momo { background: #fdf2f8; color: #db2777; border: 1px solid #fbcfe8; }
+    .acc-icon.kredivo { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+    .acc-icon.home { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .acc-icon.zalopay { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+
+    .acc-text h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .acc-text p {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .add-platform-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px;
+      border: 2px dashed #93c5fd;
+      background: #eff6ff;
+      border-radius: 16px;
+      color: #2563eb;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 6px;
+      margin-bottom: 20px;
+      transition: all 0.2s;
+    }
+
+    .add-platform-btn:hover {
+      background: #dbeafe;
+      border-color: #2563eb;
+    }
+
+    /* Modal chọn nền tảng mới */
+    .platform-sheet-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 250;
+      display: none;
+      justify-content: flex-end;
+      flex-direction: column;
+      backdrop-filter: blur(2px);
+    }
+
+    .platform-sheet-overlay.active {
+      display: flex;
+    }
+
+    .platform-sheet {
+      background: white;
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      padding: 20px 20px 30px;
+      animation: slideUp 0.25s ease-out;
+      max-height: 85%;
+      overflow-y: auto;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .sheet-handle {
+      width: 40px;
+      height: 4px;
+      background: #cbd5e1;
+      border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+
+    /* ================= SCREEN 3: DASHBOARD KHIÊN AN TOÀN ================= */
+    .dashboard-screen {
+      background: #f8fafc;
+    }
+
+    .dash-header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      color: white;
+      padding: 16px 20px 22px;
+      border-bottom-left-radius: 26px;
+      border-bottom-right-radius: 26px;
+    }
+
+    .dash-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .shield-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.18);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .shield-card {
+      background: white;
+      border-radius: 20px;
+      padding: 18px 16px;
+      color: #0f172a;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      margin-top: 6px;
+    }
+
+    .shield-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .shield-card-head h3 {
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    /* NÚT TỔNG: TẮT / MỞ TẤT CẢ (MASTER TOGGLE) */
+    .master-switch-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-pill {
+      font-size: 11.5px;
+      background: #dcfce7;
+      color: #15803d;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 700;
+      transition: all 0.25s;
+    }
+
+    .status-pill.disabled {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    /* Switch Style iOS */
+    .switch-toggle {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+
+    .switch-toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #cbd5e1;
+      transition: .3s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    input:checked + .slider {
+      background-color: #10b981;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
+    /* 3 Card lớp bảo vệ được thiết kế thông minh: vừa có nút On/Off, vừa có nút Cài Đặt riêng */
+    .layers-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      text-align: center;
+    }
+
+    .layer-item {
+      background: #f1f5f9;
+      padding: 12px 6px 10px;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.25s ease;
+      user-select: none;
+      border: 1.5px solid transparent;
+      position: relative;
+    }
+
+    .layer-item:hover {
+      border-color: #93c5fd;
+    }
+
+    .layer-item.off {
+      opacity: 0.6;
+      background: #f8fafc;
+      border-color: #e2e8f0;
+    }
+
+    .layer-item .icon {
+      font-size: 22px;
+    }
+
+    .layer-item .name {
+      font-size: 11px;
+      font-weight: 700;
+      color: #334155;
+      line-height: 1.2;
+    }
+
+    .toggle-tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 800;
+      background: #10b981;
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .layer-item.off .toggle-tag {
+      background: #94a3b8;
+    }
+
+    .layer-setting-link {
+      font-size: 9.5px;
+      color: #2563eb;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      margin-top: 2px;
+      padding: 2px 6px;
+      background: #eff6ff;
+      border-radius: 6px;
+    }
+
+    /* Card Thống kê chi tiêu */
+    .stats-card {
+      margin: 16px 20px 0;
+      background: white;
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .stat-box h5 {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .stat-box h2 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .progress-bar-bg {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .progress-bar-fill {
+      width: 28%;
+      height: 100%;
+      background: #10b981;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .linked-acc {
+      margin: 14px 20px 0;
+      background: white;
+      padding: 12px 16px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    /* Bottom Nav Bar cố định phía dưới */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 68px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding-bottom: 10px;
+      z-index: 100;
+    }
+
+    .nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+    }
+
+    .nav-btn.active {
+      color: #2563eb;
+    }
+
+    .nav-btn .icon {
+      font-size: 18px;
+    }
+
+    /* ================= SCREEN MỚI: TÍNH KHẢ NĂNG CHI TRẢ ================= */
+    .afford-screen {
+      background: #f8fafc;
+      padding: 10px 18px 20px;
+    }
+
+    .afford-card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .afford-input-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px dashed #e2e8f0;
+    }
+
+    .afford-input-row:last-child {
+      border-bottom: none;
+    }
+
+    .afford-label {
+      font-size: 13px;
+      color: #334155;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .afford-value-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .afford-input {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+      text-align: right;
+      border: 1px solid transparent;
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 4px 8px;
+      width: 120px;
+      font-family: inherit;
+    }
+
+    .afford-input:focus {
+      border-color: #2563eb;
+      background: #ffffff;
+      outline: none;
+    }
+
+    .afford-sub-platform {
+      padding-left: 28px;
+      font-size: 12px;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+      padding-top: 4px;
+      padding-bottom: 4px;
+    }
+
+    .afford-remaining-box {
+      background: #ecfdf5;
+      border: 1.5px solid #a7f3d0;
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .afford-remaining-box span {
+      font-size: 13px;
+      font-weight: 700;
+      color: #065f46;
+    }
+
+    .afford-remaining-box strong {
+      font-size: 16px;
+      font-weight: 800;
+      color: #059669;
+    }
+
+    .recommend-box {
+      background: #eff6ff;
+      border: 1.5px solid #bfdbfe;
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 14px;
+      position: relative;
+    }
+
+    .recommend-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .recommend-amount {
+      font-size: 22px;
+      font-weight: 800;
+      color: #1d4ed8;
+      margin-bottom: 6px;
+    }
+
+    .recommend-desc {
+      font-size: 11.5px;
+      color: #3b82f6;
+      line-height: 1.45;
+    }
+
+    .afford-btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 16px;
+      margin-bottom: 10px;
+    }
+
+    .btn-use-recommend {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-custom-threshold {
+      background: white;
+      color: #2563eb;
+      border: 1.5px solid #bfdbfe;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    /* ================= SCREEN TRUNG TÂM THIẾT LẬP (MENU 3 CHẾ ĐỘ) ================= */
+    .settings-hub-screen {
+      padding: 10px 18px 20px;
+      background: #f8fafc;
+    }
+
+    .setting-hub-card {
+      background: white;
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1.5px solid #e2e8f0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s;
+    }
+
+    .setting-hub-card:hover {
+      border-color: #3b82f6;
+      background: #f0f7ff;
+    }
+
+    .hub-card-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .hub-icon-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .hub-icon-wrap.th { background: #eff6ff; color: #2563eb; }
+    .hub-icon-wrap.ctx { background: #fef3c7; color: #d97706; }
+    .hub-icon-wrap.fr { background: #f1f5f9; color: #475569; }
+
+    .hub-card-text h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 3px;
+    }
+
+    .hub-card-text p {
+      font-size: 11.5px;
+      color: #64748b;
+    }
+
+    /* ================= CÁC MÀN HÌNH THIẾT LẬP CHI TIẾT (RIÊNG TỪNG CHẾ ĐỘ) ================= */
+    .detail-setting-screen {
+      padding: 10px 18px 20px;
+      background: #f8fafc;
+    }
+
+    .setting-group {
+      background: white;
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    .setting-group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .setting-group h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .setting-group p {
+      font-size: 11.5px;
+      color: #64748b;
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+
+    .slider-amount-display {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 14px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+    }
+
+    .slider-amount-display span {
+      font-size: 12px;
+      color: #1e40af;
+      font-weight: 600;
+    }
+
+    .slider-amount-display strong {
+      font-size: 18px;
+      color: #2563eb;
+      font-weight: 800;
+    }
+
+    .range-slider {
+      width: 100%;
+      height: 8px;
+      border-radius: 5px;
+      background: #e2e8f0;
+      outline: none;
+      -webkit-appearance: none;
+      accent-color: #2563eb;
+      margin-bottom: 14px;
+      cursor: pointer;
+    }
+
+    .range-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #2563eb;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+    }
+
+    .threshold-options {
+      display: flex;
+      gap: 6px;
+    }
+
+    .th-chip {
+      flex: 1;
+      padding: 8px 2px;
+      text-align: center;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #334155;
+      background: white;
+      transition: all 0.2s;
+    }
+
+    .th-chip.selected {
+      border-color: #2563eb;
+      background: #eff6ff;
+      color: #2563eb;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1e293b;
+      border-bottom: 1px dashed #f1f5f9;
+    }
+
+    .checkbox-row:last-child {
+      border-bottom: none;
+    }
+
+    .checkbox-row input {
+      width: 18px;
+      height: 18px;
+      accent-color: #2563eb;
+    }
+
+    .time-picker-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      padding: 10px 14px;
+      border-radius: 12px;
+      margin-top: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .time-picker-row select {
+      background: white;
+      border: 1px solid #cbd5e1;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .freq-config-box {
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 10px;
+    }
+
+    .freq-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .stepper-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 4px 10px;
+    }
+
+    .step-btn {
+      background: none;
+      border: none;
+      font-size: 16px;
+      font-weight: 800;
+      color: #2563eb;
+      cursor: pointer;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .step-val {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0f172a;
+      min-width: 22px;
+      text-align: center;
+    }
+
+    /* ================= SCREEN: LỊCH SỬ GIAO DỊCH ================= */
+    .history-screen {
+      background: #f8fafc;
+      padding: 10px 18px 20px;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+
+    .filter-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-tab {
+      padding: 7px 16px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #e2e8f0;
+      color: #475569;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .filter-tab.active {
+      background: #2563eb;
+      color: white;
+    }
+
+    .tx-item {
+      background: white;
+      padding: 14px 16px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+      cursor: pointer;
+      border: 1.5px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tx-item:hover {
+      border-color: #93c5fd;
+      transform: translateY(-1px);
+    }
+
+    .tx-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .tx-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .tx-logo.shopee { background: #fff1f0; color: #ee4d2d; }
+    .tx-logo.tiki { background: #e0f2fe; color: #0284c7; }
+    .tx-logo.lazada { background: #fdf2f8; color: #e11d48; }
+    .tx-logo.momo { background: #fdf2f8; color: #db2777; }
+    .tx-logo.kredivo { background: #eff6ff; color: #2563eb; }
+
+    .tx-name {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .tx-time {
+      font-size: 11.5px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .tx-right {
+      text-align: right;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tx-price {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    /* ================= SCREEN: TRANG CHI TIẾT ĐƠN HÀNG ================= */
+    .detail-screen {
+      background: #f8fafc;
+      padding: 10px 18px 20px;
+    }
+
+    .detail-card {
+      background: white;
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+    }
+
+    .detail-status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed #e2e8f0;
+      margin-bottom: 14px;
+    }
+
+    .detail-badge {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 10px;
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .product-row {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .product-thumb {
+      width: 70px;
+      height: 70px;
+      border-radius: 14px;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      flex-shrink: 0;
+    }
+
+    .product-info h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.4;
+      margin-bottom: 4px;
+    }
+
+    .product-info p {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .detail-table-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12.5px;
+      padding: 6px 0;
+      color: #475569;
+    }
+
+    .detail-table-row.total {
+      border-top: 1px solid #e2e8f0;
+      margin-top: 8px;
+      padding-top: 10px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .safety-shield-box {
+      background: #eff6ff;
+      border: 1.5px solid #bfdbfe;
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    /* ================= SCREEN 5: SHOPEE SIMULATION ================= */
+    .shopee-screen {
+      background: #f5f5f5;
+      position: relative;
+    }
+
+    .shopee-header {
+      background: white;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e5e5e5;
+    }
+
+    .shopee-search {
+      flex: 1;
+      margin: 0 10px;
+      background: #f1f1f1;
+      border-radius: 20px;
+      padding: 8px 14px;
+      font-size: 12px;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .product-hero {
+      background: white;
+      padding: 16px;
+      text-align: center;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .product-img {
+      width: 180px;
+      height: 180px;
+      border-radius: 14px;
+      margin: 0 auto 10px;
+      background: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 54px;
+    }
+
+    .product-details {
+      background: white;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+    }
+
+    .product-price {
+      font-size: 20px;
+      font-weight: 800;
+      color: #ee4d2d;
+      margin-bottom: 4px;
+    }
+
+    .spay-promo-tag {
+      display: inline-block;
+      font-size: 11px;
+      color: #ee4d2d;
+      background: #fff1f0;
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .product-title {
+      font-size: 13.5px;
+      line-height: 1.4;
+      font-weight: 600;
+      color: #222;
+      margin-bottom: 8px;
+    }
+
+    .simulation-control {
+      background: #eff6ff;
+      border: 1px dashed #3b82f6;
+      padding: 12px;
+      border-radius: 14px;
+      margin: 10px 16px;
+      font-size: 11.5px;
+    }
+
+    .sim-buttons {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .btn-sim {
+      flex: 1;
+      padding: 7px 4px;
+      border-radius: 8px;
+      font-size: 10.5px;
+      font-weight: 700;
+      border: 1px solid #3b82f6;
+      background: white;
+      color: #2563eb;
+      cursor: pointer;
+    }
+
+    .btn-sim.active {
+      background: #2563eb;
+      color: white;
+    }
+
+    .shopee-bottom {
+      margin-top: auto;
+      background: white;
+      border-top: 1px solid #eee;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .btn-buy-shopee {
+      background: #ee4d2d;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13.5px;
+      cursor: pointer;
+    }
+
+    /* ================= SCREEN: POPUPS CẢNH BÁO ================= */
+    .popup-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.65);
+      z-index: 200;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      backdrop-filter: blur(5px);
+    }
+
+    .popup-overlay.active {
+      display: flex;
+    }
+
+    .popup-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 20px 20px 24px;
+      width: 100%;
+      color: #0f172a;
+      position: relative;
+      animation: zoomIn 0.25s ease-out;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      max-height: 90%;
+      overflow-y: auto;
+    }
+
+    @keyframes zoomIn {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .popup-close {
+      position: absolute;
+      top: 16px;
+      right: 18px;
+      font-size: 20px;
+      color: #94a3b8;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .popup-header-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .popup-shield-icon {
+      width: 36px;
+      height: 36px;
+      background: #fef2f2;
+      color: #ef4444;
+      border: 1px solid #fee2e2;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .warning-center {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .warning-icon {
+      color: #ef4444;
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .calc-table-light {
+      margin-bottom: 20px;
+    }
+
+    .calc-row-light {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      padding: 8px 0;
+      color: #334155;
+      border-bottom: 1px dashed #cbd5e1;
+    }
+
+    .calc-row-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    .over-limit-box {
+      background: #fef2f2;
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+      border: 1px solid #fecaca;
+    }
+
+    .suggest-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+
+    .action-btn-continue {
+      background: #f1f5f9;
+      color: #0f172a;
+      border: none;
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    /* Màn hình Xác nhận rủi ro bước 2/2 */
+    .risk-confirm-screen {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #ffffff;
+      z-index: 210;
+      display: none;
+      flex-direction: column;
+      padding: 0;
+      color: #0f172a;
+      overflow-y: auto;
+    }
+
+    .risk-confirm-screen.active {
+      display: flex;
+      animation: slideInRight 0.3s ease-out;
+    }
+
+    @keyframes slideInRight {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    .rc-header {
+      padding: 20px 20px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .rc-content {
+      padding: 20px;
+    }
+
+    .rc-summary-box {
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .rc-checkbox-box {
+      background: #f8fafc;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      cursor: pointer;
+    }
+
+    .btn-confirm-risk {
+      background: #6d28d9;
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      opacity: 0.5;
+      pointer-events: none;
+      transition: all 0.2s;
+    }
+
+    .btn-confirm-risk.enabled {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  
+    /* IN-APP TOAST NOTIFICATION TRONG KHUNG ĐIỆN THOẠI */
+    .in-app-toast {
+      position: absolute;
+      top: 48px;
+      left: 16px;
+      right: 16px;
+      background: rgba(15, 23, 42, 0.94);
+      color: #ffffff;
+      padding: 12px 16px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 500;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transform: translateY(-120%);
+      opacity: 0;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    .in-app-toast.show {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .toast-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(37, 99, 235, 0.25);
+      color: #60a5fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .toast-body {
+      flex: 1;
+    }
+
+    .toast-body h5 {
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 2px;
+      color: #ffffff;
+    }
+
+    .toast-body p {
+      font-size: 11.5px;
+      color: #cbd5e1;
+      line-height: 1.4;
+      white-space: pre-line;
+    }
+
+    /* Ẩn Bottom Nav ở màn Onboarding */
+    .bottom-nav.hide-nav {
+      display: none !important;
+    }
+
+    
+
+    .onboarding-top {
+      margin-top: 15px;
+    }
+
+    .onboarding-screen .shield-mascot {
+      width: 140px;
+      height: 160px;
+      margin: 15px auto 10px;
+    }
+
+    .onboarding-bottom-actions {
+      margin-top: auto;
+      padding-bottom: 10px;
+    }
+
+
+    /* NÚT XEM LỊCH SỬ MUA (CHUẨN CONCEPT GIAO DIỆN) */
+    .btn-history-action {
+      background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+      color: #ffffff;
+      border: none;
+      width: 100%;
+      padding: 14px 20px;
+      border-radius: 16px;
+      font-size: 14.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(79, 70, 229, 0.25);
+      transition: all 0.2s;
+    }
+
+    .btn-history-action:active {
+      transform: scale(0.98);
+      box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
+    }
+
+    /* NÚT HỦY BỎ DƯỚI SHEET THÊM TÀI KHOẢN */
+    .btn-sheet-cancel {
+      background: #f1f5f9;
+      color: #64748b;
+      border: none;
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.2s;
+    }
+
+    .btn-sheet-cancel:hover {
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+
+    /* ================= CẢNH BÁO BẢO VỆ THEO NGỮ CẢNH (ĐÊM MUỘN) THEO MẪU MỚI ================= */
+    .ctx-moon-badge {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #ede9fe;
+      color: #6d28d9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin: 0 auto 12px;
+    }
+
+    .ctx-title-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: #6d28d9;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .ctx-amount-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 14px;
+      margin: 14px 0;
+      text-align: center;
+    }
+
+    .ctx-amount-val {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-top: 4px;
+    }
+
+    .ctx-remaining-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #334155;
+      padding: 6px 0;
+    }
+
+    .ctx-remaining-row .val {
+      color: #059669;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .ctx-accordion {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .ctx-accordion-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .ctx-accordion-body {
+      display: none;
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.5;
+      margin-top: 8px;
+      border-top: 1px dashed #cbd5e1;
+      padding-top: 8px;
+    }
+
+    .ctx-accordion.open .ctx-accordion-body {
+      display: block;
+    }
+
+    /* Option list for Night Step 2 */
+    .ctx-option-item {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .ctx-option-item:hover {
+      border-color: #c4b5fd;
+      background: #faf5ff;
+    }
+
+    .ctx-option-item.selected {
+      border-color: #6d28d9;
+      background: #f5f3ff;
+    }
+
+    .ctx-option-item input[type="radio"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #6d28d9;
+      flex-shrink: 0;
+    }
+
+    .ctx-option-item label {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #1e293b;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .btn-step-continue {
+      background: #6d28d9;
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-step-continue:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-step-cancel {
+      background: transparent;
+      color: #6d28d9;
+      border: 1px solid #c4b5fd;
+      width: 100%;
+      padding: 13px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+
+    /* ================= CẢNH BÁO BẢO VỆ THEO TẦN SUẤT (MẪU MỚI) ================= */
+    .freq-clock-badge {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #fef3c7;
+      color: #d97706;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin: 0 auto 12px;
+    }
+
+    .freq-title-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: #d97706;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .freq-option-item {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .freq-option-item:hover {
+      border-color: #fde68a;
+      background: #fffbeb;
+    }
+
+    .freq-option-item.selected {
+      border-color: #d97706;
+      background: #fffbeb;
+    }
+
+    .freq-option-item input[type="radio"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #d97706;
+      flex-shrink: 0;
+    }
+
+    .freq-option-item label {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #1e293b;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .btn-freq-continue {
+      background: #0f172a;
+      color: white;
+      border: none;
+      width: 100%;
+      padding: 15px;
+      border-radius: 14px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-freq-continue:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-freq-stop {
+      background: transparent;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+      width: 100%;
+      padding: 13px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+
+    
+    /* ================= ONBOARDING CHUẨN APP THẨM MỸ CAO ================= */
+    .screen.onboarding-screen {
+      padding: 24px 20px 28px !important;
+      background: radial-gradient(circle at 50% 25%, #eff6ff 0%, #ffffff 85%);
+      text-align: center;
+      height: 100% !important;
+      overflow: hidden !important;
+      justify-content: center !important;
+      gap: 16px;
+    }
+
+    .screen.onboarding-screen.active {
+      display: flex !important;
+      flex-direction: column !important;
+    }
+
+    .onboarding-content-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: auto 0;
+    }
+
+    .app-mascot-container {
+      position: relative;
+      width: 145px;
+      height: 155px;
+      margin: 0 auto 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .mascot-glow {
+      position: absolute;
+      width: 130px;
+      height: 130px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(255, 255, 255, 0) 70%);
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    .mascot-svg {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      z-index: 2;
+      animation: floatMascot 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatMascot {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-5px); }
+    }
+
+    .onboarding-brand-title {
+      font-size: 25px;
+      font-weight: 800;
+      color: #1e3a8a;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 3px;
+    }
+
+    .onboarding-brand-sub {
+      font-size: 11.5px;
+      color: #3b82f6;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 20px;
+    }
+
+    .onboarding-slogan h2 {
+      font-size: 21px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.35;
+      margin-bottom: 10px;
+    }
+
+    .onboarding-slogan p {
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.5;
+      padding: 0 12px;
+      margin-bottom: 15px;
+    }
+
+    .onboarding-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    .btn-register-app {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.3);
+      transition: all 0.2s;
+    }
+
+    .btn-register-app:active {
+      transform: scale(0.98);
+    }
+
+    .btn-login-outline {
+      background: #ffffff;
+      color: #2563eb;
+      border: 1.5px solid #bfdbfe;
+      padding: 13px;
+      border-radius: 16px;
+      font-size: 14.5px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+    }
+
+    .btn-login-outline:active {
+      background: #eff6ff;
+    }
+
+    /* Modal Đăng nhập mô phỏng */
+    .login-modal-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.65);
+      z-index: 600;
+      display: none;
+      justify-content: flex-end;
+      flex-direction: column;
+      backdrop-filter: blur(4px);
+    }
+
+    .login-modal-overlay.active {
+      display: flex;
+    }
+
+    .login-modal-card {
+      background: #ffffff;
+      border-top-left-radius: 26px;
+      border-top-right-radius: 26px;
+      padding: 22px 20px 30px;
+      animation: slideUp 0.25s ease-out;
+    }
+
+
+    /* ================= SCREEN: ĐĂNG KÝ TÀI KHOẢN CHUẨN APP ================= */
+    .register-screen {
+      padding: 10px 20px 30px;
+      background: #ffffff;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+      text-align: left;
+    }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .form-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 13px 14px 13px 40px;
+      border-radius: 14px;
+      border: 1.5px solid #e2e8f0;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #0f172a;
+      background: #f8fafc;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    .form-input:focus {
+      border-color: #2563eb;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .form-icon {
+      position: absolute;
+      left: 14px;
+      font-size: 16px;
+      color: #94a3b8;
+    }
+
+    .terms-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin: 16px 0 20px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .terms-row input {
+      width: 18px;
+      height: 18px;
+      accent-color: #2563eb;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .terms-text {
+      font-size: 11.5px;
+      color: #64748b;
+      line-height: 1.45;
+    }
+
+    .terms-text a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .btn-finish-connect {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      padding: 15px;
+      border-radius: 16px;
+      font-size: 14.5px;
+      font-weight: 800;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 14px;
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-finish-connect:active {
+      transform: scale(0.98);
+    }
+
+    /* Wallet card toggle pill */
+    .wallet-toggle-pill {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 12px;
+      transition: all 0.2s;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .wallet-toggle-pill.linked {
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
+    }
+
+    .wallet-toggle-pill.unlinked {
+      background: #eff6ff;
+      color: #2563eb;
+      border: 1px solid #bfdbfe;
+    }
+
+
+    /* ================= SCREEN: MÀN HÌNH CHÍNH ĐIỆN THOẠI (HOMESCREEN) ================= */
+    .screen.homescreen-screen {
+      padding: 10px 16px 20px !important;
+      background: linear-gradient(145deg, #1e1b4b 0%, #312e81 40%, #1e3a8a 70%, #0f172a 100%);
+      color: #ffffff;
+      display: none !important;
+      flex-direction: column;
+      justify-content: space-between !important;
+      height: 100% !important;
+      overflow: hidden !important;
+      position: relative;
+    }
+
+    .screen.homescreen-screen.active {
+      display: flex !important;
+    }
+
+    /* Hình nền sao mờ / hiệu ứng ánh sáng iOS */
+    .homescreen-wallpaper-glow {
+      position: absolute;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.45) 0%, rgba(59, 130, 246, 0.15) 50%, transparent 75%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Widget đồng hồ & ngày tháng trên Home screen */
+    .home-widget-clock {
+      position: relative;
+      z-index: 2;
+      margin-top: 16px;
+      margin-bottom: 20px;
+      background: rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 26px;
+      padding: 16px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    }
+
+    .home-widget-clock .date-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: #93c5fd;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    .home-widget-clock .time-text {
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -1px;
+      color: #ffffff;
+    }
+
+    .home-widget-clock .weather-box {
+      text-align: right;
+    }
+
+    .weather-temp {
+      font-size: 20px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      justify-content: flex-end;
+    }
+
+    .weather-desc {
+      font-size: 11px;
+      color: #cbd5e1;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    /* Grid ứng dụng màn hình chính */
+    .home-app-grid {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px 12px;
+      padding: 4px 6px;
+    }
+
+    .home-app-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .home-app-item:active {
+      transform: scale(0.88);
+    }
+
+    .app-icon-squircle {
+      width: 58px;
+      height: 58px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      position: relative;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+      transition: all 0.2s;
+    }
+
+    /* Icon Khiên An Toàn đặc biệt nổi bật */
+    .app-icon-squircle.khien-app {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e3a8a 100%);
+      box-shadow: 0 8px 24px rgba(37, 99, 235, 0.55), 0 0 0 2px rgba(255, 255, 255, 0.4);
+      animation: pulseTarget 2.2s infinite;
+    }
+
+    @keyframes pulseTarget {
+      0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(37, 99, 235, 0.55), 0 0 0 2px rgba(255, 255, 255, 0.4); }
+      50% { transform: scale(1.05); box-shadow: 0 12px 30px rgba(59, 130, 246, 0.8), 0 0 0 3px rgba(255, 255, 255, 0.7); }
+    }
+
+    .khien-badge-dot {
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      background: #ef4444;
+      color: white;
+      font-size: 10px;
+      font-weight: 800;
+      width: 19px;
+      height: 19px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    .home-app-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: #ffffff;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+      text-align: center;
+      max-width: 68px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Hướng dẫn gợi ý bấm vào app */
+    .tap-hint-pill {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px dashed rgba(255, 255, 255, 0.4);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 12px auto 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(8px);
+      animation: bounceHint 2s infinite;
+    }
+
+    @keyframes bounceHint {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    /* Thanh Dock dưới đáy điện thoại */
+    .home-dock-wrap {
+      position: relative;
+      z-index: 2;
+      margin-top: auto;
+      margin-bottom: 8px;
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 30px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .dock-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      transition: transform 0.18s;
+    }
+
+    .dock-icon:active {
+      transform: scale(0.88);
+    }
+
+    /* Nút Home Bar (vạch ngang đáy iPhone) */
+    .home-indicator-bar {
+      width: 134px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 3px;
+      margin: 4px auto 0;
+      cursor: pointer;
+    }
+
+</style>
+</head>
+<body>
+
+  <div class="phone-container">
+    <!-- Tai thỏ và Status bar -->
+    <div class="notch"></div>
+    
+    <!-- IN-APP TOAST NOTIFICATION (THÔNG BÁO NỘI BỘ MÀN HÌNH ĐIỆN THOẠI) -->
+    <div id="inAppToast" class="in-app-toast">
+      <div class="toast-icon" id="toastIcon">🛡️</div>
+      <div class="toast-body">
+        <h5 id="toastTitle">Thông báo SafePay</h5>
+        <p id="toastMessage">Nội dung thông báo...</p>
+      </div>
+    </div>
+
+    <div class="status-bar" id="statusBar">
+      <span id="clockTime">09:41</span>
+      <div style="display: flex; gap: 4px; align-items: center;">
+        <span>5G</span>
+        <span style="font-size: 11px;">100%</span>
+      </div>
+    </div>
+
+                    <!-- ================= MÀN HÌNH CHÍNH ĐIỆN THOẠI (HOMESCREEN MÔ PHỎNG) ================= -->
+    <div class="screen active homescreen-screen" id="screen-homescreen">
+      <div class="homescreen-wallpaper-glow"></div>
+
+      <!-- Widget Đồng hồ & Thời tiết iOS -->
+      <div class="home-widget-clock">
+        <div>
+          <div class="date-text" id="widgetDate">Thứ Ba, 20 THG 10</div>
+          <div class="time-text" id="widgetTime">09:41</div>
+        </div>
+        <div class="weather-box">
+          <div class="weather-temp"><span>☀️</span> 29°</div>
+          <div class="weather-desc">TP. Hồ Chí Minh</div>
+        </div>
+      </div>
+
+      <!-- Gợi ý tương tác người dùng -->
+      <div style="text-align: center; margin-bottom: 12px; position: relative; z-index: 2;">
+        <div class="tap-hint-pill" onclick="openKhienAppFromHomescreen()">
+          <span>👇</span> Bấm vào icon <strong>Khiên An Toàn</strong> để mở app
+        </div>
+      </div>
+
+      <!-- Lưới ứng dụng chính -->
+      <div class="home-app-grid">
+        <!-- Ứng dụng trọng tâm: Khiên An Toàn -->
+        <div class="home-app-item" onclick="openKhienAppFromHomescreen()" title="Bấm để mở Khiên An Toàn">
+          <div class="app-icon-squircle khien-app">
+            <span style="font-size: 30px;">🛡️</span>
+            <div class="khien-badge-dot">1</div>
+          </div>
+          <span class="home-app-name" style="color: #93c5fd; font-weight: 800;">Khiên An Toàn</span>
+        </div>
+
+        <!-- Các app thông dụng khác để giả lập chân thực -->
+        <div class="home-app-item" onclick="showHomescreenOtherToast('Shopee')">
+          <div class="app-icon-squircle" style="background: linear-gradient(135deg, #ee4d2d 0%, #ff6b4a 100%);">
+            <span style="font-size: 28px;">🛍️</span>
+          </div>
+          <span class="home-app-name">Shopee</span>
+        </div>
+
+        <div class="home-app-item" onclick="showHomescreenOtherToast('MoMo')">
+          <div class="app-icon-squircle" style="background: linear-gradient(135deg, #a50064 0%, #db2777 100%);">
+            <span style="font-size: 24px; font-weight: 900; color: white;">mo</span>
+          </div>
+          <span class="home-app-name">MoMo</span>
+        </div>
+
+        <div class="home-app-item" onclick="showHomescreenOtherToast('TikTok')">
+          <div class="app-icon-squircle" style="background: #000000;">
+            <span style="font-size: 28px;">🎵</span>
+          </div>
+          <span class="home-app-name">TikTok</span>
+        </div>
+
+        <div class="home-app-item" onclick="showHomescreenOtherToast('Tin nhắn')">
+          <div class="app-icon-squircle" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
+            <span style="font-size: 28px;">💬</span>
+          </div>
+          <span class="home-app-name">Tin nhắn</span>
+        </div>
+
+        <div class="home-app-item" onclick="showHomescreenOtherToast('Ảnh')">
+          <div class="app-icon-squircle" style="background: #ffffff;">
+            <span style="font-size: 28px;">🖼️</span>
+          </div>
+          <span class="home-app-name">Ảnh</span>
+        </div>
+
+        <div class="home-app-item" onclick="showHomescreenOtherToast('Cài đặt')">
+          <div class="app-icon-squircle" style="background: linear-gradient(135deg, #94a3b8 0%, #475569 100%);">
+            <span style="font-size: 28px;">⚙️</span>
+          </div>
+          <span class="home-app-name">Cài đặt</span>
+        </div>
+
+        <div class="home-app-item" onclick="showHomescreenOtherToast('Zalo')">
+          <div class="app-icon-squircle" style="background: linear-gradient(135deg, #0068ff 0%, #0084ff 100%);">
+            <span style="font-size: 22px; font-weight: 800; color: white;">Zalo</span>
+          </div>
+          <span class="home-app-name">Zalo</span>
+        </div>
+      </div>
+
+      <!-- Thanh Dock iOS dưới cùng -->
+      <div class="home-dock-wrap">
+        <div class="dock-icon" style="background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);" onclick="showHomescreenOtherToast('Điện thoại')">📞</div>
+        <div class="dock-icon" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);" onclick="showHomescreenOtherToast('Safari')">🧭</div>
+        <div class="dock-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);" onclick="showHomescreenOtherToast('Tin nhắn')">✉️</div>
+        <div class="dock-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);" onclick="showHomescreenOtherToast('Ghi chú')">📝</div>
+      </div>
+
+      <!-- Vạch Home Indicator iOS -->
+      <div class="home-indicator-bar" onclick="showInAppToast('Màn hình chính', 'Bạn đang ở màn hình chính điện thoại.', '📱')"></div>
+    </div>
+
+    <!-- 1. MÀN HÌNH ONBOARDING (GIAO DIỆN KHIÊN AN TOÀN CHUẨN APP) -->
+    <div class="screen onboarding-screen" id="screen-onboarding">
+      <div class="onboarding-content-wrap">
+        <div style="display: flex; justify-content: flex-start; width: 100%; margin-bottom: -10px;">
+          <button onclick="returnToHomeScreen()" style="background: rgba(0,0,0,0.05); border: none; padding: 6px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; color: #64748b; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+            <span>‹</span> Màn hình chính
+          </button>
+        </div>
+        <!-- Mascot Khiên An Toàn chuyên nghiệp -->
+        
+        <div class="app-mascot-container">
+          <div class="mascot-glow"></div>
+          <svg class="mascot-svg" viewBox="0 0 160 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="shieldGrad" x1="10" y1="10" x2="150" y2="170" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#3b82f6" />
+                <stop offset="0.5" stop-color="#2563eb" />
+                <stop offset="1" stop-color="#1d4ed8" />
+              </linearGradient>
+              <linearGradient id="innerGrad" x1="30" y1="30" x2="130" y2="150" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#60a5fa" />
+                <stop offset="1" stop-color="#2563eb" />
+              </linearGradient>
+              <filter id="shadowGlow" x="0" y="0" width="160" height="190" filterUnits="userSpaceOnUse">
+                <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#2563eb" flood-opacity="0.3"/>
+              </filter>
+            </defs>
+            <path d="M80 12 L142 38 C142 105 115 145 80 168 C45 145 18 105 18 38 L80 12 Z" fill="url(#shieldGrad)" filter="url(#shadowGlow)" />
+            <path d="M80 24 L132 46 C132 100 110 134 80 154 C50 134 28 100 28 46 L80 24 Z" fill="url(#innerGrad)" opacity="0.9" />
+            <ellipse cx="62" cy="78" rx="6" ry="9" fill="#0f172a" />
+            <circle cx="64" cy="75" r="2.5" fill="#ffffff" />
+            <ellipse cx="98" cy="78" rx="6" ry="9" fill="#0f172a" />
+            <circle cx="100" cy="75" r="2.5" fill="#ffffff" />
+            <ellipse cx="52" cy="88" rx="7" ry="4" fill="#fda4af" opacity="0.75" />
+            <ellipse cx="108" cy="88" rx="7" ry="4" fill="#fda4af" opacity="0.75" />
+            <path d="M71 92 Q80 102 89 92" stroke="#0f172a" stroke-width="3.5" stroke-linecap="round" fill="none" />
+            <circle cx="24" cy="28" r="4" fill="#38bdf8" opacity="0.8" />
+            <circle cx="136" cy="22" r="5" fill="#facc15" opacity="0.9" />
+            <circle cx="140" cy="115" r="3.5" fill="#34d399" opacity="0.8" />
+          </svg>
+        </div>
+
+
+        <div class="onboarding-brand-title">
+          <span>Khiên An Toàn</span>
+          <span style="font-size: 18px;">🛡️</span>
+        </div>
+        <div class="onboarding-brand-sub">Bảo vệ chi tiêu mua trước trả sau</div>
+
+        <div class="onboarding-slogan">
+          <h2>Chi tiêu thông minh<br>Bảo vệ tương lai tài chính</h2>
+          <p>Hệ thống tự động phát hiện và cảnh báo rủi ro khi mua sắm vượt ngưỡng, đêm muộn hoặc dồn dập.</p>
+        </div>
+
+        <!-- 2 Nút Đăng ký và Đăng nhập chuẩn giao diện ứng dụng -->
+        <div class="onboarding-actions">
+          <button class="btn-register-app" onclick="goToScreen('screen-register')">Đăng ký tài khoản</button>
+          <button class="btn-login-outline" onclick="openLoginModal()">Đăng nhập</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL ĐĂNG NHẬP MÔ PHỎNG -->
+    <div class="login-modal-overlay" id="loginModalOverlay" onclick="closeLoginModal(event)">
+      <div class="login-modal-card" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h3 style="font-size: 17px; font-weight: 800; color: #0f172a;">Đăng nhập Khiên An Toàn</h3>
+          <button style="background: none; border: none; font-size: 18px; color: #94a3b8; cursor: pointer;" onclick="closeLoginModal()">✕</button>
+        </div>
+        <p style="font-size: 12px; color: #64748b; margin-bottom: 16px;">Nhập số điện thoại để đăng nhập và đồng bộ dữ liệu ví:</p>
+
+        <div style="margin-bottom: 14px;">
+          <label style="font-size: 11.5px; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">Số điện thoại</label>
+          <input type="tel" placeholder="Nhập số điện thoại đã đăng ký" style="width: 100%; padding: 12px 14px; border-radius: 12px; border: 1.5px solid #cbd5e1; font-size: 14px; font-weight: 700; color: #0f172a; outline: none; background: #f8fafc;">
+        </div>
+
+        <button class="btn-primary" style="padding: 14px; border-radius: 14px; margin-bottom: 10px;" onclick="simulateLoginSuccess()">Đăng nhập nhanh</button>
+        <button class="btn-sheet-cancel" style="margin-top: 0;" onclick="closeLoginModal()">Hủy bỏ</button>
+      </div>
+    </div>
+
+        <!-- ================= MÀN HÌNH ĐĂNG KÝ TÀI KHOẢN (CHUẨN APP FINTECH) ================= -->
+    <div class="screen register-screen" id="screen-register">
+      <div style="margin-top: 26px;">
+        <div class="header-nav">
+          <button class="back-btn" onclick="goToScreen('screen-onboarding')">←</button>
+          <div class="screen-title">Đăng ký tài khoản</div>
+        </div>
+
+        <p class="screen-desc" style="margin-bottom: 16px;">Tạo tài khoản để Khiên An Toàn đồng hành bảo vệ các giao dịch chi tiêu của bạn:</p>
+
+        <form id="registerForm" onsubmit="event.preventDefault(); handleRegisterSubmit();">
+          <div class="form-group">
+            <label class="form-label">Họ và tên</label>
+            <div class="form-input-wrap">
+              <span class="form-icon">👤</span>
+              <input type="text" class="form-input" id="regName" required placeholder="Nhập họ và tên của bạn">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Số điện thoại</label>
+            <div class="form-input-wrap">
+              <span class="form-icon">📱</span>
+              <input type="tel" class="form-input" id="regPhone" required placeholder="Nhập số điện thoại của bạn">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Mật khẩu</label>
+            <div class="form-input-wrap">
+              <span class="form-icon">🔒</span>
+              <input type="password" class="form-input" id="regPass" required placeholder="Tạo mật khẩu (tối thiểu 6 ký tự)">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Xác nhận mật khẩu</label>
+            <div class="form-input-wrap">
+              <span class="form-icon">🛡️</span>
+              <input type="password" class="form-input" id="regConfirmPass" required placeholder="Nhập lại mật khẩu xác nhận">
+            </div>
+          </div>
+
+          <label class="terms-row">
+            <input type="checkbox" id="regTerms" checked required>
+            <span class="terms-text">Tôi đồng ý với <a href="javascript:void(0)">Điều khoản sử dụng</a> và <a href="javascript:void(0)">Chính sách bảo mật tài chính</a> của Khiên An Toàn.</span>
+          </label>
+
+          <button type="submit" class="btn-primary" style="padding: 15px; border-radius: 16px; font-size: 15px; font-weight: 800;">
+            Tiếp tục liên kết ví ➔
+          </button>
+        </form>
+
+        <div style="text-align: center; margin-top: 18px; font-size: 12.5px; color: #64748b;">
+          Đã có tài khoản? <a href="javascript:void(0)" onclick="openLoginModal()" style="color: #2563eb; font-weight: 700; text-decoration: none;">Đăng nhập ngay</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. MÀN HÌNH KẾT NỐI TÀI KHOẢN MUA TRƯỚC TRẢ SAU (TỰ DO LỰA CHỌN) -->
+    <div class="screen connect-screen" id="screen-connect">
+      <div style="margin-top: 26px;">
+        <div class="header-nav">
+          <button class="back-btn" onclick="goToScreen('screen-register')">←</button>
+          <div class="screen-title">Liên kết ví trả sau</div>
+        </div>
+        <div class="screen-desc">Chọn các tài khoản hoặc ví trả sau bạn đang sử dụng để Khiên An Toàn tự động kích hoạt bảo vệ:</div>
+
+        <div id="linkedPlatformsList">
+          <!-- Ví 1: SPayLater -->
+          <div class="account-card" onclick="toggleWalletConnection('spay')">
+            <div class="account-info">
+              <div class="acc-icon spay">S</div>
+              <div class="acc-text">
+                <h4>SPayLater</h4>
+                <p>Mua trước, trả sau Shopee</p>
+              </div>
+            </div>
+            <div class="wallet-toggle-pill unlinked" id="pill-spay">+ Liên kết</div>
+          </div>
+
+          <!-- Ví 2: MoMo -->
+          <div class="account-card" onclick="toggleWalletConnection('momo')">
+            <div class="account-info">
+              <div class="acc-icon momo">mo</div>
+              <div class="acc-text">
+                <h4>Ví Trả Sau MoMo</h4>
+                <p>Hạn mức chi tiêu lên đến 10 triệu</p>
+              </div>
+            </div>
+            <div class="wallet-toggle-pill unlinked" id="pill-momo">+ Liên kết</div>
+          </div>
+
+          <!-- Ví 3: Kredivo -->
+          <div class="account-card" onclick="toggleWalletConnection('kredivo')">
+            <div class="account-info">
+              <div class="acc-icon kredivo">K</div>
+              <div class="acc-text">
+                <h4>Kredivo</h4>
+                <p>Mua trước trả sau lên đến 50 triệu</p>
+              </div>
+            </div>
+            <div class="wallet-toggle-pill unlinked" id="pill-kredivo">+ Liên kết</div>
+          </div>
+
+          <!-- Ví 4: Home PayLater -->
+          <div class="account-card" onclick="toggleWalletConnection('home')">
+            <div class="account-info">
+              <div class="acc-icon home">H</div>
+              <div class="acc-text">
+                <h4>Home PayLater</h4>
+                <p>Trả sau Tiki, Lazada, TGDĐ</p>
+              </div>
+            </div>
+            <div class="wallet-toggle-pill unlinked" id="pill-home">+ Liên kết</div>
+          </div>
+        </div>
+
+        <button class="add-platform-btn" onclick="openAddPlatformSheet()">
+          <span style="font-size: 20px; font-weight: 800;">+</span>
+          <span>Thêm tài khoản mua trước trả sau khác</span>
+        </button>
+
+        <div style="background: white; border-radius: 16px; padding: 14px; font-size: 11.5px; color: #64748b; line-height: 1.5; border: 1px solid #e2e8f0; margin-bottom: 14px;">
+          🔒 <strong>Bảo mật cấp cao:</strong> Khiên An Toàn chỉ theo dõi biến động hạn mức để cảnh báo mua sắm, cam kết 100% không truy cập mật khẩu hay giao dịch tài chính riêng tư.
+        </div>
+
+        <!-- Nút hoàn tất chuyển vào Dashboard -->
+        <button class="btn-finish-connect" onclick="finishConnectAndGoToDashboard()">
+          <span>Hoàn tất & Kích hoạt Khiên</span>
+          <span>➔</span>
+        </button>
+      </div>
+    </div>
+
+
+    <!-- BOTTOM SHEET: CHỌN NỀN TẢNG MỚI ĐỂ THÊM VÀO -->
+    <div class="platform-sheet-overlay" id="platformSheet" onclick="closeAddPlatformSheet(event)">
+      <div class="platform-sheet" onclick="event.stopPropagation()">
+        <div class="sheet-handle"></div>
+        <h3 style="font-size: 17px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">Thêm tài khoản mua trước trả sau</h3>
+        <p style="font-size: 12px; color: #64748b; margin-bottom: 16px;">Chọn nền tảng Mua trước Trả sau bạn đang dùng:</p>
+
+        <div class="account-card" onclick="addNewPlatform('Kredivo', 'kredivo', 'K', 'Mua trước trả sau Kredivo')">
+          <div class="account-info">
+            <div class="acc-icon kredivo">K</div>
+            <div class="acc-text">
+              <h4>Kredivo</h4>
+              <p>Hạn mức trả sau lên đến 50 triệu</p>
+            </div>
+          </div>
+          <span style="color: #2563eb; font-weight: 700; font-size: 13px;">+ Thêm</span>
+        </div>
+
+        <div class="account-card" onclick="addNewPlatform('Home PayLater', 'home', 'H', 'Mua trước trả sau Home Credit')">
+          <div class="account-info">
+            <div class="acc-icon home">H</div>
+            <div class="acc-text">
+              <h4>Home PayLater</h4>
+              <p>Trả sau Tiki, Lazada, Thế Giới Di Động</p>
+            </div>
+          </div>
+          <span style="color: #2563eb; font-weight: 700; font-size: 13px;">+ Thêm</span>
+        </div>
+
+        <button class="btn-sheet-cancel" onclick="closeAddPlatformSheet()">Hủy bỏ</button>
+      </div>
+    </div>
+
+    <!-- 3. MÀN HÌNH DASHBOARD KHIÊN AN TOÀN -->
+    <div class="screen dashboard-screen" id="screen-dash">
+      <div class="dash-header" style="margin-top: 26px;">
+        <div class="dash-top">
+          <div>
+            <h2 style="font-size: 18px; font-weight: 800;">SafePay</h2>
+            <p style="font-size: 12px; opacity: 0.85;" id="shieldSubText">Bạn đang được bảo vệ</p>
+          </div>
+          <div class="shield-badge">🛡️ Khiên An Toàn</div>
+        </div>
+
+        <div class="shield-card">
+          <div class="shield-card-head">
+            <div>
+              <h3>Khiên An Toàn</h3>
+              <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Tắt/Bật hoặc bấm Cài đặt từng chế độ</div>
+            </div>
+            <div class="master-switch-wrap">
+              <span class="status-pill" id="activeLayersBadge">3/3 lớp bật</span>
+              <label class="switch-toggle" title="Tắt / Bật toàn bộ Khiên An Toàn">
+                <input type="checkbox" id="masterSwitch" checked onchange="toggleMasterShield(this.checked)">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- 3 NÚT LỚP BẢO VỆ CÓ CẢ NÚT ON/OFF VÀ LINK CÀI ĐẶT RIÊNG CHO TỪNG CHẾ ĐỘ -->
+          <div class="layers-grid">
+            <!-- Chế độ 1: Ngưỡng chi tiêu -->
+            <div class="layer-item" id="cardThreshold">
+              <span class="icon">💰</span>
+              <span class="name">Ngưỡng chi tiêu</span>
+              <span class="toggle-tag" id="tagThreshold" onclick="toggleSingleLayer('threshold')">ON</span>
+              <span class="layer-setting-link" onclick="goToScreen('screen-affordability')">⚙️ Cài đặt</span>
+            </div>
+
+            <!-- Chế độ 2: Ngữ cảnh -->
+            <div class="layer-item" id="cardContext">
+              <span class="icon">🌙</span>
+              <span class="name">Ngữ cảnh</span>
+              <span class="toggle-tag" id="tagContext" onclick="toggleSingleLayer('context')">ON</span>
+              <span class="layer-setting-link" onclick="goToScreen('screen-setting-context')">⚙️ Cài đặt</span>
+            </div>
+
+            <!-- Chế độ 3: Tần suất -->
+            <div class="layer-item" id="cardFreq">
+              <span class="icon">⚡</span>
+              <span class="name">Tần suất</span>
+              <span class="toggle-tag" id="tagFreq" onclick="toggleSingleLayer('freq')">ON</span>
+              <span class="layer-setting-link" onclick="goToScreen('screen-setting-frequency')">⚙️ Cài đặt</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Thống kê chi tiêu -->
+      <div class="stats-card">
+        <div class="stats-row">
+          <div class="stat-box">
+            <h5>Đã chi mua trước trả sau hôm nay</h5>
+            <h2>850.000₫</h2>
+          </div>
+          <div class="stat-box" style="text-align: right;">
+            <h5>Số giao dịch</h5>
+            <h2 id="dashTxCount">3 đơn</h2>
+          </div>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="dashProgressFill"></div>
+        </div>
+        <div class="progress-info">
+          <span>Hạn mức tháng: <strong id="dashThresholdDisplay" style="color:#0f172a;">3.000.000₫</strong></span>
+          <span style="color: #10b981;">Còn được tiêu: <strong id="dashRemainingDisplay">2.150.000₫</strong></span>
+        </div>
+      </div>
+
+      <div class="linked-acc">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="acc-icon spay" style="width: 32px; height: 32px; font-size: 12px;">S</div>
+          <div>
+            <div style="font-size: 13px; font-weight: 700;">SPayLater (...1234)</div>
+            <div style="font-size: 11px; color: #10b981; font-weight: 600;">● Đã kết nối</div>
+          </div>
+        </div>
+        <button style="border: none; background: #eff6ff; color: #2563eb; font-weight: 700; font-size: 11px; padding: 6px 12px; border-radius: 8px; cursor: pointer;" onclick="goToScreen('screen-shopee')">
+          Test Mua Hàng ➔
+        </button>
+      </div>
+
+      <div style="padding: 14px 20px 24px;">
+        <button class="btn-history-action" onclick="goToScreen('screen-history')">
+          <span style="font-size: 16px;">📊</span>
+          <span>Xem lịch sử mua</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= MÀN HÌNH TRUNG TÂM THIẾT LẬP (MENU 3 CHẾ ĐỘ RÕ RÀNG) ================= -->
+    <div class="screen settings-hub-screen" id="screen-settings-hub">
+      <div style="margin-top: 26px;">
+        <div class="header-nav">
+          <button class="back-btn" onclick="goToScreen('screen-dash')">←</button>
+          <div class="screen-title">Trung tâm Thiết lập</div>
+        </div>
+        <p class="screen-desc">Tùy chỉnh thông số chi tiết cho cả 3 lớp bảo vệ của Khiên An Toàn:</p>
+
+        <!-- Chế độ 1 -->
+        <div class="setting-hub-card" onclick="goToScreen('screen-affordability')">
+          <div class="hub-card-left">
+            <div class="hub-icon-wrap th">💰</div>
+            <div class="hub-card-text">
+              <h4>1. Ngưỡng chi tiêu mua trước trả sau</h4>
+              <p>Khảo sát thu nhập & đặt hạn mức tháng</p>
+            </div>
+          </div>
+          <span style="color: #94a3b8; font-size: 18px;">›</span>
+        </div>
+
+        <!-- Chế độ 2 -->
+        <div class="setting-hub-card" onclick="goToScreen('screen-setting-context')">
+          <div class="hub-card-left">
+            <div class="hub-icon-wrap ctx">🌙</div>
+            <div class="hub-card-text">
+              <h4>2. Bảo vệ theo Ngữ cảnh</h4>
+              <p>Khung giờ đêm muộn & mùa Sale lớn</p>
+            </div>
+          </div>
+          <span style="color: #94a3b8; font-size: 18px;">›</span>
+        </div>
+
+        <!-- Chế độ 3 -->
+        <div class="setting-hub-card" onclick="goToScreen('screen-setting-frequency')">
+          <div class="hub-card-left">
+            <div class="hub-icon-wrap fr">⚡</div>
+            <div class="hub-card-text">
+              <h4>3. Bảo vệ theo Tần suất</h4>
+              <p>Số đơn dồn dập & thời gian tạm khóa</p>
+            </div>
+          </div>
+          <span style="color: #94a3b8; font-size: 18px;">›</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= CHẾ ĐỘ 1: TÍNH KHẢ NĂNG CHI TRẢ & ĐỀ XUẤT NGƯỠNG ================= -->
+    <div class="screen afford-screen" id="screen-affordability">
+      <div style="margin-top: 26px;">
+        <div class="header-nav">
+          <button class="back-btn" onclick="goToScreen('screen-settings-hub')">←</button>
+          <div class="screen-title">Tính khả năng chi trả</div>
+        </div>
+        <p class="screen-desc">Nhập thông tin tài chính để SafePay đề xuất hạn mức mua trước trả sau an toàn nhất cho bạn:</p>
+
+        <div class="afford-card">
+          <div class="afford-input-row">
+            <div class="afford-label"><span>💵</span> Thu nhập hàng tháng</div>
+            <div class="afford-value-wrap">
+              <input type="number" class="afford-input" id="inputIncome" value="8000000" oninput="calculateAffordability()">
+              <span style="font-size: 12px; font-weight: 700;">₫</span>
+            </div>
+          </div>
+
+          <div class="afford-input-row">
+            <div class="afford-label"><span>🏠</span> Chi phí sinh hoạt</div>
+            <div class="afford-value-wrap">
+              <input type="number" class="afford-input" id="inputExpense" value="3000000" oninput="calculateAffordability()">
+              <span style="font-size: 12px; font-weight: 700;">₫</span>
+            </div>
+          </div>
+
+          <div class="afford-input-row">
+            <div class="afford-label"><span>💳</span> Các khoản nợ hiện tại</div>
+            <div class="afford-value-wrap">
+              <input type="number" class="afford-input" id="inputDebt" value="0" oninput="calculateAffordability()">
+              <span style="font-size: 12px; font-weight: 700;">₫</span>
+            </div>
+          </div>
+
+          <div class="afford-input-row" style="border-bottom: none; padding-bottom: 4px;">
+            <div class="afford-label"><span>🛍️</span> Tổng trả góp / mua trước trả sau các nền tảng</div>
+            <strong style="font-size: 14px; color: #0f172a;" id="displayTotalBnplLoans">1.500.000₫</strong>
+          </div>
+          <div class="afford-sub-platform">
+            <span>• SPayLater Shopee</span>
+            <span>1.000.000₫</span>
+          </div>
+          <div class="afford-sub-platform">
+            <span>• Ví trả sau MoMo</span>
+            <span>500.000₫</span>
+          </div>
+
+          <div class="afford-remaining-box">
+            <span>Còn lại sau chi phí & nợ:</span>
+            <strong id="displayLeftAfterBills">3.500.000₫</strong>
+          </div>
+        </div>
+
+        <div class="recommend-box">
+          <div class="recommend-badge">🛡️ GỢI Ý TỪ SAFEPAY</div>
+          <div style="font-size: 12px; color: #475569; font-weight: 600; margin-bottom: 2px;">Ngưỡng mua trước trả sau an toàn đề xuất:</div>
+          <div class="recommend-amount" id="displayRecommendedThreshold">Tối đa 700.000₫/tháng</div>
+          <div class="recommend-desc">
+            Dựa trên thu nhập, chi phí thiết yếu và các khoản nợ bạn đã khai báo (khuyến nghị ~20% số dư an toàn).
+          </div>
+        </div>
+
+        <div class="afford-btn-group">
+          <button class="btn-use-recommend" onclick="applyRecommendedThreshold()">Dùng ngưỡng đề xuất (700.000₫)</button>
+          <button class="btn-custom-threshold" onclick="goToScreen('screen-settings-threshold')">Tự chỉnh ngưỡng bằng thanh kéo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÀN HÌNH TỰ CHỈNH HẠN MỨC (THANH KÉO SLIDER) -->
+    <div class="screen detail-setting-screen" id="screen-settings-threshold">
+      <div style="margin-top: 26px;">
+        <div class="header-nav">
+          <button class="back-btn" onclick="goToScreen('screen-affordability')">←</button>
+          <div class="screen-title">Cài đặt Hạn mức Mua Trước Trả Sau</div>
+        </div>
+        <p class="screen-desc">Tự chọn hạn mức chi tiêu mua trước trả sau tối đa bạn được phép xài trong tháng:</p>
+
+        <div class="setting-group">
+          <div class="slider-amount-display">
+            <span>Hạn mức tối đa được xài:</span>
+            <strong id="sliderValueText">3.000.000₫</strong>
+          </div>
+
+          <input type="range" class="range-slider" id="thresholdSlider" min="500000" max="10000000" step="100000" value="3000000" oninput="onSliderChange(this.value)">
+
+          <div style="font-size: 10px; color: #94a3b8; margin-bottom: 12px; display: flex; justify-content: space-between;">
+            <span>500k</span>
+            <span>5 triệu</span>
+            <span>10 triệu</span>
+          </div>
+
+          <div class="threshold-options">
+            <div class="th-chip" onclick="quickSelectThreshold(2000000)">2.000.000₫</div>
+            <div class="th-chip selected" id="chip3M" onclick="quickSelectThreshold(3000000)">3.000.000₫</div>
+            <div class="th-chip" onclick="quickSelectThreshold(5000000)">5.000.000₫</div>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="saveThresholdSetting()">Lưu hạn mức chi tiêu</button>
+      </div>
+    </div>
+
+    <!-- ================= CHẾ ĐỘ 2: CÀI ĐẶT NGỮ CẢNH (RIÊNG BIỆT) ================= -->
+    <div class="screen detail-setting-screen" id="screen-setting-context">
+      <div style="margin-top: 26px;">
+        <div class="header-nav">
+          <button class="back-btn" onclick="goToScreen('screen-settings-hub')">←</button>
+          <div class="screen-title">Cài đặt Ngữ Cảnh</div>
+        </div>
+        <p class="screen-desc">Ngăn ngừa hành vi mua sắm bốc đồng vào những thời điểm cảm xúc dễ mất kiểm soát:</p>
+
+        <div class="setting-group">
+          <div class="setting-group-header">
+            <h4>🌙 Bảo vệ ban đêm (Đêm muộn)</h4>
+          </div>
+          <p>Tự động tạm ẩn phương thức Trả Sau khi mua hàng vào ban đêm để tránh quyết định bốc đồng.</p>
+
+          <label class="checkbox-row">
+            <span>Kích hoạt bảo vệ ban đêm</span>
+            <input type="checkbox" id="checkNight" checked>
+          </label>
+
+          <div class="time-picker-row">
+            <span>Khung giờ áp dụng:</span>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <select id="nightStart">
+                <option value="22:00">22:00</option>
+                <option value="23:00" selected>23:00</option>
+                <option value="00:00">00:00</option>
+              </select>
+              <span>đến</span>
+              <select id="nightEnd">
+                <option value="05:00">05:00</option>
+                <option value="06:00" selected>06:00</option>
+                <option value="07:00">07:00</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <div class="setting-group-header">
+            <h4>🔥 Mùa Sale lớn (Siêu Sale & Payday)</h4>
+          </div>
+          <p>Cảnh báo kép khi mua hàng trong các ngày Siêu Sale (11.11, 12.12) và ngày nhận lương.</p>
+
+          <label class="checkbox-row">
+            <span>Bảo vệ ngày Siêu Sale thương mại điện tử</span>
+            <input type="checkbox" id="checkSale" checked>
+          </label>
+          <label class="checkbox-row">
+            <span>Bảo vệ ngày nhận lương (Payday cuối tháng)</span>
+            <input type="checkbox" id="checkPayday" checked>
+          </label>
+        </div>
+
+        <button class="btn-primary" onclick="saveContextSetting()">Lưu cài đặt Ngữ cảnh</button>
+      </div>
+    </div>
+
+    <!-- ================= CHẾ ĐỘ 3: CÀI ĐẶT TẦN SUẤT (RIÊNG BIỆT) ================= -->
+    <div class="screen detail-setting-screen" id="screen-setting-frequency">
+      <div style="margin-top: 26px;">
+        <div class="header-nav">
+          <button class="back-btn" onclick="goToScreen('screen-settings-hub')">←</button>
+          <div class="screen-title">Cài đặt Tần Suất</div>
+        </div>
+        <p class="screen-desc">Phát hiện và hãm phanh khi bạn liên tục đặt nhiều đơn hàng Trả Sau cùng lúc:</p>
+
+        <div class="setting-group">
+          <div class="setting-group-header">
+            <h4>⚡ Tự động khóa hãm phanh</h4>
+          </div>
+          <p>Khóa tạm thời các dịch vụ mua trước trả sau để bạn có khoảng nghỉ tĩnh tâm suy nghĩ trước khi chốt đơn tiếp.</p>
+
+          <label class="checkbox-row">
+            <span>Kích hoạt khóa theo tần suất</span>
+            <input type="checkbox" id="checkFreq" checked>
+          </label>
+
+          <div class="freq-config-box">
+            <div class="freq-row">
+              <span>Số đơn dồn dập tối đa:</span>
+              <div class="stepper-control">
+                <button class="step-btn" onclick="adjustMaxOrders(-1)">−</button>
+                <span class="step-val" id="maxOrdersVal">3</span>
+                <button class="step-btn" onclick="adjustMaxOrders(1)">+</button>
+              </div>
+            </div>
+
+            <div class="freq-row" style="margin-top: 10px;">
+              <span>Trong khoảng thời gian:</span>
+              <select style="background: white; border: 1px solid #cbd5e1; padding: 4px 8px; border-radius: 6px; font-weight: 700;">
+                <option>1 giờ</option>
+                <option selected>2 giờ</option>
+                <option>4 giờ</option>
+              </select>
+            </div>
+
+            <div class="freq-row" style="margin-top: 10px;">
+              <span>Thời gian tạm khóa hãm phanh:</span>
+              <select style="background: white; border: 1px solid #cbd5e1; padding: 4px 8px; border-radius: 6px; font-weight: 700;">
+                <option>6 giờ</option>
+                <option selected>12 giờ</option>
+                <option>24 giờ</option>
+              </select>
+            </div>
+
+            <div style="font-size: 11px; color: #64748b; line-height: 1.4; margin-top: 12px; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
+              💡 <em>Nếu đặt từ <strong><span id="hintOrdersText">3</span> đơn</strong> trong <strong>2 giờ</strong>, SPayLater sẽ tự khóa 12 giờ.</em>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="saveFrequencySetting()">Lưu cài đặt Tần suất</button>
+      </div>
+    </div>
+
+    <!-- ================= SCREEN: LỊCH SỬ GIAO DỊCH ================= -->
+    <div class="screen history-screen" id="screen-history">
+      <div style="margin-top: 26px;">
+        <div class="header-nav">
+          <button class="back-btn" onclick="goToScreen('screen-dash')">←</button>
+          <div class="screen-title">Lịch sử giao dịch Mua Trước Trả Sau</div>
+        </div>
+
+        <div class="filter-tabs" id="historyTabs">
+          <div class="filter-tab active" onclick="filterTransactions('all', this)">Tất cả</div>
+          <div class="filter-tab" onclick="filterTransactions('SPayLater', this)">SPayLater</div>
+          <div class="filter-tab" onclick="filterTransactions('MoMo', this)">MoMo</div>
+          <div class="filter-tab" onclick="filterTransactions('Kredivo', this)">Kredivo</div>
+        </div>
+
+        <div id="transactionListContainer"></div>
+      </div>
+    </div>
+
+    <!-- ================= SCREEN: CHI TIẾT ĐƠN HÀNG ================= -->
+    <div class="screen detail-screen" id="screen-order-detail">
+      <div style="margin-top: 26px;">
+        <div class="header-nav">
+          <button class="back-btn" onclick="goToScreen('screen-history')">←</button>
+          <div class="screen-title">Chi tiết đơn hàng</div>
+        </div>
+
+        <div class="detail-card">
+          <div class="detail-status-bar">
+            <div>
+              <span style="font-size: 11px; color: #64748b;">Mã đơn hàng</span>
+              <h4 style="font-size: 13px; font-weight: 800; color: #0f172a;" id="detOrderCode">#SPX-982341</h4>
+            </div>
+            <span class="detail-badge">Thanh toán mua trước trả sau thành công</span>
+          </div>
+
+          <div class="product-row">
+            <div class="product-thumb" id="detProductThumb">🧴</div>
+            <div class="product-info">
+              <h4 id="detProductName">Mỹ phẩm La Roche-Posay</h4>
+              <p id="detProductSub">Số lượng: 1 • Phân loại: 30ml</p>
+              <div style="color: #ee4d2d; font-weight: 800; font-size: 14px; margin-top: 4px;" id="detProductPrice">120.000₫</div>
+            </div>
+          </div>
+
+          <div style="border-top: 1px dashed #e2e8f0; padding-top: 10px; margin-top: 6px;">
+            <div class="detail-table-row">
+              <span>Nền tảng thanh toán:</span>
+              <strong id="detPlatform">Shopee (SPayLater)</strong>
+            </div>
+            <div class="detail-table-row">
+              <span>Thời gian mua:</span>
+              <span id="detOrderTime">Hôm nay, 16:20</span>
+            </div>
+            <div class="detail-table-row">
+              <span>Kỳ hạn trả sau:</span>
+              <span>1 kỳ (Đến hạn 25/11)</span>
+            </div>
+            <div class="detail-table-row total">
+              <span>Tổng tiền thanh toán:</span>
+              <span style="color: #ee4d2d;" id="detOrderTotal">120.000₫</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-primary" style="background: #e2e8f0; color: #334155;" onclick="goToScreen('screen-history')">
+          ← Quay lại danh sách đơn
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= SCREEN: GIẢ LẬP MUA SẮM SHOPEE ================= -->
+    <div class="screen shopee-screen" id="screen-shopee">
+      <div class="shopee-header" style="margin-top: 26px;">
+        <button class="back-btn" onclick="goToScreen('screen-dash')">←</button>
+        <div class="shopee-search">🔍 Mỹ phẩm La Roche-Posay / Paula's Choice</div>
+        <div style="font-size: 16px;">🛒</div>
+      </div>
+
+      <div class="simulation-control">
+        <strong>🧪 KỊCH BẢN THỬ NGHIỆM KHIÊN:</strong>
+        <p style="color: #64748b; margin-top: 2px;">Bấm chọn kịch bản để thử nghiệm độ nhạy của 3 lớp bảo vệ:</p>
+        <div class="sim-buttons">
+          <button class="btn-sim active" id="btnScenTh" onclick="setProductScenario('threshold')">1. Vượt ngưỡng</button>
+          <button class="btn-sim" id="btnScenNight" onclick="setProductScenario('night')">2. Đêm muộn</button>
+          <button class="btn-sim" id="btnScenFreq" onclick="setProductScenario('freq')">3. Tần suất cao</button>
+        </div>
+      </div>
+
+      <div class="product-hero">
+        <div class="product-img" id="productImage">🧴</div>
+      </div>
+
+      <div class="product-details">
+        <div class="spay-promo-tag" id="spayTag">SPayLater 0% • Trả sau tiện lợi</div>
+        <div class="product-price" id="productPrice">1.063.350₫</div>
+        <div class="product-title" id="productTitle">
+          Dưỡng chất giảm thâm nám và dưỡng sáng toàn diện La Roche-Posay Mela B3 serum 30ml
+        </div>
+      </div>
+
+      <div class="shopee-bottom">
+        <div style="font-size: 12px; color: #64748b;">
+          <div>Tổng thanh toán SPayLater</div>
+          <div style="font-weight: 800; color: #ee4d2d; font-size: 15px;" id="bottomPrice">1.063.350₫</div>
+        </div>
+        <button class="btn-buy-shopee" onclick="triggerCheckout()">
+          Mua với SPayLater
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= CÁC POPUP CẢNH BÁO KHI BỊ CHẶN THANH TOÁN ================= -->
+
+    <!-- POPUP 1: CHẶN VÌ VƯỢT HẠN MỨC CHI TIÊU (LIGHT MODE) -->
+    <div class="popup-overlay" id="popup-threshold">
+      <div class="popup-card">
+        <button class="popup-close" onclick="closePopup()">✕</button>
+        
+        <div class="popup-header-top">
+          <div class="popup-shield-icon">🛡️</div>
+          <div>
+            <h3 style="font-size: 15px; font-weight: 800;">Khiên An Toàn</h3>
+            <p style="font-size: 10px; color: #64748b;">BẢO VỆ THEO HẠN MỨC CHI TIÊU</p>
+          </div>
+        </div>
+
+        <div class="warning-center">
+          <div class="warning-icon">⚠️</div>
+          <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 6px;">Giao dịch vượt hạn mức chi tiêu</h2>
+          <p style="font-size: 12px; color: #475569; line-height: 1.5;">Đơn hàng này sẽ khiến tổng chi tiêu vượt ngân sách mua trước trả sau bạn đã thiết lập trong tháng.</p>
+        </div>
+
+        <div class="calc-table-light">
+          <div class="calc-row-light">
+            <span>Hạn mức tháng này</span>
+            <strong id="popupSetThresholdLight">3.000.000₫</strong>
+          </div>
+          <div class="calc-row-light">
+            <span>Đã sử dụng</span>
+            <strong>850.000₫</strong>
+          </div>
+          <div class="calc-row-light">
+            <span>Giao dịch mới</span>
+            <strong id="popupNewTxAmount">1.063.350₫</strong>
+          </div>
+        </div>
+
+        <div class="calc-row-total">
+          <div>
+            <span style="font-size: 13px; font-weight: 700;">Tổng sau giao dịch</span>
+            <div style="font-size: 11px; color: #64748b;" id="popupMathSub">850.000₫ + 1.063.350₫</div>
+          </div>
+          <strong id="popupTotalAfterLight" style="font-size: 16px; font-weight: 800; color: #0f172a;">1.913.350₫</strong>
+        </div>
+
+        <div class="over-limit-box" id="overLimitWarningBox">
+          <div style="font-size: 20px;">📈</div>
+          <div>
+            <h4 id="overLimitAmountText" style="color: #ef4444; font-size: 13px; font-weight: 700;">Vượt hạn mức 0₫</h4>
+            <p id="overLimitPercentText" style="color: #ef4444; font-size: 11px;">Vượt 0% so với hạn mức tháng này.</p>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">Bạn có thể cân nhắc:</h4>
+          <div class="suggest-item" onclick="closePopup()">
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <span>🛒</span>
+              <div>
+                <h5 style="font-size: 12.5px; font-weight: 700;">Xem lại đơn hàng</h5>
+                <p style="font-size: 11px; color: #64748b;">Bỏ bớt món hoặc chọn phương án ít tốn kém hơn.</p>
+              </div>
+            </div>
+            <span>›</span>
+          </div>
+          <div class="suggest-item" onclick="openRiskConfirm()">
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <span>❤️</span>
+              <div>
+                <h5 style="font-size: 12.5px; font-weight: 700;">Xem xét nhu cầu thiết yếu</h5>
+                <p style="font-size: 11px; color: #64748b;">Nếu là nhu cầu khẩn cấp, tiếp tục xác nhận.</p>
+              </div>
+            </div>
+            <span>›</span>
+          </div>
+        </div>
+
+        <button class="action-btn-continue" onclick="openRiskConfirm()">Tiếp tục có cân nhắc</button>
+      </div>
+    </div>
+
+    <!-- MÀN HÌNH BƯỚC 2: XÁC NHẬN RỦI RO -->
+    <div class="risk-confirm-screen" id="riskConfirmScreen">
+      <div class="rc-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 32px; height: 32px; background: #ede9fe; color: #6d28d9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px;">🛡️</div>
+          <div>
+            <h3 style="font-size: 14px; font-weight: 800;">Khiên An Toàn</h3>
+            <p style="font-size: 10px; color: #64748b;">BẢO VỆ THEO HẠN MỨC</p>
+          </div>
+        </div>
+        <div style="background: #f1f5f9; color: #6d28d9; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;">Bước 2/2</div>
+      </div>
+
+      <div class="rc-content">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div style="width: 60px; height: 60px; background: #ede9fe; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #6d28d9; font-size: 28px;">!</div>
+          <h2 style="font-size: 17px; font-weight: 800; margin-bottom: 8px;">Bạn đã xác nhận rủi ro</h2>
+          <p style="font-size: 12px; color: #64748b; line-height: 1.5;">Giao dịch này sẽ chỉ được tiếp tục nếu đáp ứng các quy tắc ngoại lệ và điều kiện an toàn đã thiết lập.</p>
+        </div>
+
+        <div class="rc-summary-box">
+          <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">Tóm tắt giao dịch</h4>
+          <div class="calc-row-light" style="padding: 4px 0;">
+            <span>Hạn mức tháng này</span>
+            <strong id="rcSetThreshold">3.000.000₫</strong>
+          </div>
+          <div class="calc-row-light" style="padding: 4px 0;">
+            <span>Đã sử dụng</span>
+            <strong>850.000₫</strong>
+          </div>
+          <div class="calc-row-light" style="padding: 4px 0; border-bottom: none;">
+            <span>Giao dịch mới</span>
+            <strong id="rcNewTx">1.063.350₫</strong>
+          </div>
+          <div class="calc-row-total" style="border-top: 1px dashed #cbd5e1; padding-top: 8px; margin-top: 6px;">
+            <span>Tổng sau giao dịch</span>
+            <strong id="rcTotalAfter" style="color: #6d28d9;">1.913.350₫</strong>
+          </div>
+        </div>
+
+        <label class="rc-checkbox-box">
+          <input type="checkbox" id="riskConfirmCheckbox" onchange="toggleConfirmBtn(this.checked)" style="width: 20px; height: 20px; accent-color: #6d28d9; margin-top: 2px;">
+          <span style="font-size: 11.5px; font-weight: 600; color: #0f172a; line-height: 1.5;">Tôi hiểu rằng giao dịch này sẽ vượt hạn mức chi tiêu đã thiết lập và có thể ảnh hưởng đến chi phí thiết yếu sinh hoạt. Tôi vẫn muốn tiếp tục.</span>
+        </label>
+
+        <button class="btn-confirm-risk" id="btnFinalConfirm" onclick="confirmBypassAndPay()">Xác nhận, tôi vẫn muốn tiếp tục</button>
+        <button style="background: transparent; color: #6d28d9; border: 1px solid #c4b5fd; padding: 14px; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 10px;" onclick="closeRiskConfirm()">Quay lại xem các phương án</button>
+      </div>
+    </div>
+
+    
+    <!-- ================= BƯỚC 1: POPUP CẢNH BÁO BẢO VỆ THEO NGỮ CẢNH (ĐÊM MUỘN) ================= -->
+    <div class="popup-overlay" id="popup-night">
+      <div class="popup-card">
+        <button class="popup-close" onclick="closePopup()">✕</button>
+        
+        <div class="popup-header-top" style="margin-bottom: 12px;">
+          <div style="width: 32px; height: 32px; background: #ede9fe; color: #6d28d9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px;">🛡️</div>
+          <div>
+            <h3 style="font-size: 14px; font-weight: 800;">Khiên An Toàn</h3>
+            <p style="font-size: 10px; color: #64748b;">CẢNH BÁO GIAO DỊCH</p>
+          </div>
+          <div style="margin-left: auto; font-size: 10px; color: #94a3b8; font-weight: 700;">01/03</div>
+        </div>
+
+        <div style="text-align: center;">
+          <div class="ctx-moon-badge">🌙</div>
+          <div class="ctx-title-label">BẢO VỆ THEO NGỮ CẢNH</div>
+          <h2 style="font-size: 17px; font-weight: 800; margin-bottom: 6px; color: #0f172a;">Bạn đang mua sắm trong khung giờ bảo vệ.</h2>
+          <p style="font-size: 12px; color: #64748b; line-height: 1.5; padding: 0 4px;">Đây là khoảng thời gian bạn đã chọn để hạn chế mua sắm bốc đồng. Hãy kiểm tra xem món hàng có thực sự cần thiết ngay lúc này không.</p>
+        </div>
+
+        <div class="ctx-amount-card">
+          <div style="font-size: 11.5px; color: #64748b; font-weight: 600;">Đơn hàng hiện tại</div>
+          <div class="ctx-amount-val" id="nightPopupPriceDisplay">450.000₫</div>
+        </div>
+
+        <div class="ctx-remaining-row">
+          <span>Số tiền còn lại sau giao dịch:</span>
+          <span class="val" id="nightPopupRemainingDisplay">2.550.000₫</span>
+        </div>
+        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 14px;">Số liệu minh họa cho prototype, không phải số dư thực tế.</div>
+
+        <!-- Accordion vì sao nhận được cảnh báo -->
+        <div class="ctx-accordion" id="ctxAccordion" onclick="this.classList.toggle('open')">
+          <div class="ctx-accordion-header">
+            <span>ℹ️ Vì sao bạn nhận được cảnh báo?</span>
+            <span style="color: #94a3b8; font-size: 12px;">▼</span>
+          </div>
+          <div class="ctx-accordion-body">
+            Bạn đã thiết lập khung giờ bảo vệ đêm muộn (23:00 - 06:00) trong mục Cài đặt Ngữ cảnh. SafePay tạm thời giữ nhịp mua để bạn không bị cuốn theo cảm xúc mua sắm lúc mệt mỏi.
+          </div>
+        </div>
+
+        <button class="btn-step-continue" onclick="openNightStep2()">Tiếp tục có cân nhắc</button>
+        <button class="btn-step-cancel" onclick="closePopup()">Xem lại đơn hàng</button>
+
+        <div style="font-size: 10px; color: #94a3b8; text-align: center; margin-top: 10px;">Bạn luôn có thể xem lý do cảnh báo trước khi quyết định.</div>
+      </div>
+    </div>
+
+    <!-- ================= BƯỚC 2: MÀN HÌNH CHỌN LÝ DO TIẾP TỤC MUA (BƯỚC 1/2) ================= -->
+    <div class="risk-confirm-screen" id="nightStep2Screen">
+      <div class="rc-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 32px; height: 32px; background: #ede9fe; color: #6d28d9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px;">🛡️</div>
+          <div>
+            <h3 style="font-size: 14px; font-weight: 800;">Khiên An Toàn</h3>
+            <p style="font-size: 10px; color: #64748b;">BẢO VỆ THEO NGỮ CẢNH</p>
+          </div>
+        </div>
+        <div style="background: #f1f5f9; color: #6d28d9; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;">Bước 1/2</div>
+      </div>
+
+      <div class="rc-content">
+        <div style="text-align: center; margin-bottom: 16px;">
+          <div style="width: 52px; height: 52px; background: #ede9fe; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; color: #6d28d9; font-size: 24px;">🌙</div>
+          <h2 style="font-size: 16.5px; font-weight: 800; margin-bottom: 6px;">Bạn đang mua sắm trong khung giờ bảo vệ</h2>
+          <p style="font-size: 12px; color: #64748b; line-height: 1.45;">Bạn đã bật chế độ hạn chế mua sắm từ 22:00 đến 06:00. Hãy cân nhắc xem món hàng này có thực sự cần thiết ngay lúc này không.</p>
+        </div>
+
+        <div class="rc-summary-box" style="margin-bottom: 14px;">
+          <h4 style="font-size: 12.5px; font-weight: 700; margin-bottom: 8px;">Tóm tắt giao dịch</h4>
+          <div class="calc-row-light" style="padding: 3px 0;">
+            <span>Giá trị đơn hàng</span>
+            <strong id="nightStep2Price">450.000₫</strong>
+          </div>
+          <div class="calc-row-light" style="padding: 3px 0;">
+            <span>Số tiền còn lại trước giao dịch</span>
+            <strong>3.000.000₫</strong>
+          </div>
+          <div class="calc-row-light" style="padding: 3px 0; border-bottom: none;">
+            <span>Số tiền còn lại sau giao dịch</span>
+            <strong style="color: #059669;" id="nightStep2Remaining">2.550.000₫</strong>
+          </div>
+          <div style="font-size: 9.5px; color: #94a3b8; margin-top: 4px;">Dự kiến • Số liệu minh họa, không phải số dư thực tế.</div>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <h4 style="font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">Vì sao bạn muốn tiếp tục mua?</h4>
+          <p style="font-size: 11.5px; color: #64748b; margin-bottom: 10px;">Chọn lý do phù hợp nhất với bạn:</p>
+
+          <div class="ctx-option-item" onclick="selectNightReason('Đây là món hàng cần thiết', this)">
+            <input type="radio" name="nightReason" id="nr1">
+            <label for="nr1">Đây là món hàng cần thiết</label>
+          </div>
+
+          <div class="ctx-option-item" onclick="selectNightReason('Món hàng đã nằm trong kế hoạch chi tiêu', this)">
+            <input type="radio" name="nightReason" id="nr2">
+            <label for="nr2">Món hàng đã nằm trong kế hoạch chi tiêu</label>
+          </div>
+
+          <div class="ctx-option-item" onclick="selectNightReason('Tôi cần mua ngay vì tình huống khẩn cấp', this)">
+            <input type="radio" name="nightReason" id="nr3">
+            <label for="nr3">Tôi cần mua ngay vì tình huống khẩn cấp</label>
+          </div>
+
+          <div class="ctx-option-item" onclick="selectNightReason('Tôi muốn tận dụng chương trình giảm giá', this)">
+            <input type="radio" name="nightReason" id="nr4">
+            <label for="nr4">Tôi muốn tận dụng chương trình giảm giá</label>
+          </div>
+
+          <div class="ctx-option-item" onclick="selectNightReason('Lý do khác', this)">
+            <input type="radio" name="nightReason" id="nr5">
+            <label for="nr5">Lý do khác</label>
+          </div>
+        </div>
+
+        <button class="btn-step-continue" id="btnNightStep2Continue" disabled onclick="openNightStep3()">Tiếp tục xác nhận</button>
+        <button class="btn-step-cancel" onclick="closeNightFlow()">Dừng lại, xem xét thêm</button>
+      </div>
+    </div>
+
+    <!-- ================= BƯỚC 3: MÀN HÌNH XÁC NHẬN QUYẾT ĐỊNH CỦA BẠN (BƯỚC 2/2) ================= -->
+    <div class="risk-confirm-screen" id="nightStep3Screen">
+      <div class="rc-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 32px; height: 32px; background: #ede9fe; color: #6d28d9; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px;">🛡️</div>
+          <div>
+            <h3 style="font-size: 14px; font-weight: 800;">Khiên An Toàn</h3>
+            <p style="font-size: 10px; color: #64748b;">BẢO VỆ THEO NGỮ CẢNH</p>
+          </div>
+        </div>
+        <div style="background: #f1f5f9; color: #6d28d9; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;">Bước 2/2</div>
+      </div>
+
+      <div class="rc-content">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div style="width: 56px; height: 56px; background: #ede9fe; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; color: #6d28d9; font-size: 26px;">📋</div>
+          <h2 style="font-size: 17px; font-weight: 800; margin-bottom: 6px;">Xác nhận quyết định của bạn</h2>
+          <p style="font-size: 12px; color: #64748b; line-height: 1.45;">Bạn đã chọn lý do: <strong style="color: #6d28d9;" id="nightSelectedReasonText">Chưa chọn</strong>.</p>
+        </div>
+
+        <div class="rc-summary-box" style="margin-bottom: 16px;">
+          <div class="calc-row-light" style="padding: 4px 0;">
+            <span>Giá trị đơn hàng</span>
+            <strong id="nightStep3Price">450.000₫</strong>
+          </div>
+          <div class="calc-row-light" style="padding: 4px 0; border-bottom: none;">
+            <span>Số tiền còn lại sau giao dịch</span>
+            <strong style="color: #059669;" id="nightStep3Remaining">2.550.000₫</strong>
+          </div>
+        </div>
+
+        <label class="rc-checkbox-box" style="margin-bottom: 12px;">
+          <input type="checkbox" id="nightConfirmCheckbox" onchange="toggleNightFinalBtn(this.checked)" style="width: 20px; height: 20px; accent-color: #6d28d9; margin-top: 2px;">
+          <span style="font-size: 11.5px; font-weight: 600; color: #0f172a; line-height: 1.5;">Tôi đã xem số tiền còn lại, hiểu lý do cảnh báo và vẫn muốn tiếp tục giao dịch.</span>
+        </label>
+
+        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 20px; line-height: 1.4;">
+          Xác nhận này không tự động bỏ qua giới hạn bảo vệ tài chính khác nếu giao dịch vi phạm các giới hạn đó.
+        </div>
+
+        <button class="btn-step-continue" id="btnNightFinalConfirm" disabled onclick="confirmNightBypassAndPay()">Xác nhận, quay lại thanh toán</button>
+        <button class="btn-step-cancel" onclick="backToNightStep2()">Quay lại kiểm tra</button>
+      </div>
+    </div>
+
+        <!-- POPUP 3: BẢO VỆ THEO TẦN SUẤT (MẪU MỚI CHUẨN THIẾT KẾ) -->
+    <div class="risk-confirm-screen" id="freqFlowScreen">
+      <div class="rc-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 32px; height: 32px; background: #fef3c7; color: #d97706; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px;">🛍️</div>
+          <div>
+            <h3 style="font-size: 14px; font-weight: 800;">Khiên An Toàn</h3>
+            <p style="font-size: 10px; color: #64748b;">BẢO VỆ THEO TẦN SUẤT</p>
+          </div>
+        </div>
+        <div style="background: #fef3c7; color: #b45309; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;">Bước 2/3</div>
+      </div>
+
+      <div class="rc-content">
+        <div style="text-align: center; margin-bottom: 16px;">
+          <div class="freq-clock-badge">🕒</div>
+          <h2 style="font-size: 17px; font-weight: 800; margin-bottom: 6px; color: #0f172a;">Bạn đã mua nhiều lần gần đây</h2>
+          <p style="font-size: 12px; color: #64748b; line-height: 1.45;">Bạn đã thực hiện 3 giao dịch mua trước trả sau trong 2 giờ gần đây. Hãy kiểm tra lại nhu cầu và ngân sách trước khi quyết định mua thêm.</p>
+        </div>
+
+        <div class="rc-summary-box" style="margin-bottom: 14px;">
+          <div class="calc-row-light" style="padding: 4px 0;">
+            <span>Giao dịch trong 2 giờ gần đây</span>
+            <strong style="color: #b45309;" id="freqOrderCountDisplay">3 giao dịch</strong>
+          </div>
+          <div class="calc-row-light" style="padding: 4px 0;">
+            <span>Giá trị đơn hàng hiện tại</span>
+            <strong id="freqOrderPriceDisplay">450.000₫</strong>
+          </div>
+          <div class="calc-row-light" style="padding: 4px 0;">
+            <span>Số tiền còn lại trước giao dịch</span>
+            <strong>3.000.000₫</strong>
+          </div>
+          <div class="calc-row-light" style="padding: 4px 0; border-bottom: none;">
+            <span>Số tiền còn lại sau giao dịch</span>
+            <strong style="color: #059669;" id="freqRemainingDisplay">2.550.000₫</strong>
+          </div>
+          <div style="font-size: 9.5px; color: #94a3b8; margin-top: 4px; line-height: 1.3;">Sau khi trừ đơn hàng hiện tại. Số tiền minh họa, giả định số tiền trước giao dịch đã phản ánh các khoản chi cần tính.</div>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <h4 style="font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">Vì sao bạn muốn tiếp tục giao dịch?</h4>
+          <p style="font-size: 11.5px; color: #64748b; margin-bottom: 10px;">Chọn lý do phù hợp nhất với bạn:</p>
+
+          <div class="freq-option-item" onclick="selectFreqReason('Đây là món hàng cần thiết', this)">
+            <input type="radio" name="freqReason" id="fr1">
+            <label for="fr1">Đây là món hàng cần thiết</label>
+          </div>
+
+          <div class="freq-option-item" onclick="selectFreqReason('Món hàng đã nằm trong kế hoạch chi tiêu', this)">
+            <input type="radio" name="freqReason" id="fr2">
+            <label for="fr2">Món hàng đã nằm trong kế hoạch chi tiêu</label>
+          </div>
+
+          <div class="freq-option-item" onclick="selectFreqReason('Tôi cần mua ngay trong trường hợp khẩn cấp', this)">
+            <input type="radio" name="freqReason" id="fr3">
+            <label for="fr3">Tôi cần mua ngay trong trường hợp khẩn cấp</label>
+          </div>
+
+          <div class="freq-option-item" onclick="selectFreqReason('Tôi muốn tận dụng chương trình giảm giá', this)">
+            <input type="radio" name="freqReason" id="fr4">
+            <label for="fr4">Tôi muốn tận dụng chương trình giảm giá</label>
+          </div>
+
+          <div class="freq-option-item" onclick="selectFreqReason('Lý do khác', this)">
+            <input type="radio" name="freqReason" id="fr5">
+            <label for="fr5">Lý do khác</label>
+          </div>
+        </div>
+
+        <label class="rc-checkbox-box" style="margin-bottom: 10px;">
+          <input type="checkbox" id="freqConfirmCheckbox" onchange="validateFreqForm()" style="width: 20px; height: 20px; accent-color: #d97706; margin-top: 2px;">
+          <span style="font-size: 11.5px; font-weight: 600; color: #0f172a; line-height: 1.5;">Tôi đã xem số tiền còn lại và cân nhắc các giao dịch gần đây trước khi tiếp tục.</span>
+        </label>
+
+        <div style="font-size: 10px; color: #94a3b8; margin-bottom: 16px; line-height: 1.4;">
+          Nếu giao dịch đồng thời vượt ngưỡng bảo vệ tiền sinh hoạt thiết yếu, hệ thống vẫn áp dụng giới hạn đó.
+        </div>
+
+        <button class="btn-freq-continue" id="btnFreqContinue" disabled onclick="confirmFreqBypassAndPay()">Xác nhận tiếp tục</button>
+        <button class="btn-freq-stop" onclick="goToRecentOrders()">Dừng lại, xem giao dịch gần đây</button>
+      </div>
+    </div>
+
+
+    <!-- THANH BOTTOM NAV CHUNG CHO TOÀN BỘ ỨNG DỤNG -->
+    <div class="bottom-nav hide-nav" id="mainBottomNav">
+      <button class="nav-btn active" id="navHome" onclick="goToScreen('screen-dash')">
+        <span class="icon">🏠</span>
+        Trang chủ
+      </button>
+      <button class="nav-btn" id="navHistory" onclick="goToScreen('screen-history')">
+        <span class="icon">📊</span>
+        Chi tiêu
+      </button>
+      <button class="nav-btn" id="navSettings" onclick="goToScreen('screen-settings-hub')">
+        <span class="icon">⚙️</span>
+        Thiết lập
+      </button>
+      <button class="nav-btn" id="navAccount" onclick="goToScreen('screen-connect')">
+        <span class="icon">👤</span>
+        Tài khoản
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+
+    // ================= THÔNG BÁO IN-APP TOAST (TRONG MÀN HÌNH ĐIỆN THOẠI) =================
+    let toastTimeout = null;
+    function showInAppToast(title, message, icon = '🛡️') {
+      const toast = document.getElementById('inAppToast');
+      document.getElementById('toastTitle').innerText = title;
+      document.getElementById('toastMessage').innerText = message;
+      document.getElementById('toastIcon').innerText = icon;
+
+      toast.classList.add('show');
+
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3200);
+    }
+
+    // ================= DỮ LIỆU ĐƠN HÀNG MẪU =================
+    const transactionsData = [
+      {
+        id: "tx-1",
+        code: "SPX-982341",
+        platform: "SPayLater",
+        appName: "Shopee",
+        logoClass: "shopee",
+        logoText: "S",
+        name: "Shopee - Serum La Roche-Posay B3",
+        sub: "Số lượng: 1 • Phân loại: 30ml",
+        time: "Hôm nay 16:20",
+        price: 120000,
+        thumb: "🧴"
+      },
+      {
+        id: "tx-2",
+        code: "TK-410928",
+        platform: "SPayLater",
+        appName: "Tiki",
+        logoClass: "tiki",
+        logoText: "Tiki",
+        name: "Tiki - Sách Tư Duy Tài Chính Khôn Ngoan",
+        sub: "Số lượng: 2 cuốn • Bìa cứng",
+        time: "Hôm nay 12:14",
+        price: 250000,
+        thumb: "📚"
+      },
+      {
+        id: "tx-3",
+        code: "LZD-772109",
+        platform: "SPayLater",
+        appName: "Lazada",
+        logoClass: "lazada",
+        logoText: "Laz",
+        name: "Lazada - Bộ Hộp Cơm Giữ Nhiệt Văn Phòng",
+        sub: "Số lượng: 1 bộ • Màu Inox Xám",
+        time: "Hôm nay 10:32",
+        price: 480000,
+        thumb: "🍱"
+      },
+      {
+        id: "tx-4",
+        code: "MM-881920",
+        platform: "MoMo",
+        appName: "MoMo Trả Sau",
+        logoClass: "momo",
+        logoText: "mo",
+        name: "MoMo - Thanh toán Hóa đơn Điện Nước",
+        sub: "Kỳ hóa đơn tháng 10/2026",
+        time: "Hôm qua 18:40",
+        price: 350000,
+        thumb: "💡"
+      }
+    ];
+
+    // Trạng thái ứng dụng
+    let currentThreshold = 3000000;
+    let maxAllowedOrders = 3;
+    let currentScenario = 'threshold';
+    let currentFilter = 'all';
+    let recommendedThresholdValue = 700000;
+
+    let layersState = {
+      threshold: true,
+      context: true,
+      freq: true
+    };
+
+    function formatVND(val) {
+      return Number(val).toLocaleString('vi-VN') + '₫';
+    }
+
+    // ================= ĐIỀU HƯỚNG MÀN HÌNH & CẬP NHẬT NAV =================
+    
+    
+    
+    // ================= HOMESCREEN INTERACTION =================
+    function openKhienAppFromHomescreen() {
+      showInAppToast("Đang khởi động", "Mở ứng dụng Khiên An Toàn...", "🛡️");
+      setTimeout(() => {
+        goToScreen('screen-onboarding');
+      }, 350);
+    }
+
+    function showHomescreenOtherToast(appName) {
+      showInAppToast(appName, `Đây là ứng dụng giả lập ${appName}. Vui lòng bấm vào icon "Khiên An Toàn" để tiếp tục kịch bản!`, "📱");
+    }
+
+    function returnToHomeScreen() {
+      goToScreen('screen-homescreen');
+    }
+
+    // ================= XỬ LÝ ĐĂNG KÝ VÀ LIÊN KẾT VÍ =================
+    let walletStates = {
+      spay: false,
+      momo: false,
+      kredivo: false,
+      home: false
+    };
+
+    function handleRegisterSubmit() {
+      const nameInput = document.getElementById('regName').value.trim();
+      const name = nameInput ? nameInput : "Bạn";
+      
+      showInAppToast("Đăng ký thành công", `Chào mừng ${name}! Hãy chọn các ví trả sau bạn muốn bảo vệ.`, "🎉");
+      goToScreen('screen-connect');
+    }
+
+    function toggleWalletConnection(walletKey) {
+      walletStates[walletKey] = !walletStates[walletKey];
+      const pill = document.getElementById(`pill-${walletKey}`);
+      if (!pill) return;
+
+      const walletNames = {
+        spay: "SPayLater",
+        momo: "Ví Trả Sau MoMo",
+        kredivo: "Kredivo",
+        home: "Home PayLater"
+      };
+
+      if (walletStates[walletKey]) {
+        pill.className = "wallet-toggle-pill linked";
+        pill.innerText = "● Đã liên kết";
+        showInAppToast("Đã liên kết ví", `Đã bật bảo vệ cho tài khoản ${walletNames[walletKey]}.`, "✅");
+      } else {
+        pill.className = "wallet-toggle-pill unlinked";
+        pill.innerText = "+ Liên kết";
+        showInAppToast("Hủy liên kết", `Đã tạm ngưng bảo vệ tài khoản ${walletNames[walletKey]}.`, "ℹ️");
+      }
+    }
+
+    function updateDashboardLinkedWallet() {
+      const dashWalletContainer = document.querySelector('.linked-acc');
+      if (!dashWalletContainer) return;
+
+      const activeWallets = Object.keys(walletStates).filter(k => walletStates[k]);
+      if (activeWallets.length === 0) {
+        dashWalletContainer.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="acc-icon" style="width: 32px; height: 32px; font-size: 14px; background: #f1f5f9; color: #64748b;">💳</div>
+            <div>
+              <div style="font-size: 13px; font-weight: 700;">Chưa liên kết ví nào</div>
+              <div style="font-size: 11px; color: #e11d48; font-weight: 600;">● Chưa bảo vệ</div>
+            </div>
+          </div>
+          <button style="border: none; background: #eff6ff; color: #2563eb; font-weight: 700; font-size: 11px; padding: 6px 12px; border-radius: 8px; cursor: pointer;" onclick="goToScreen('screen-connect')">
+            + Liên kết ngay
+          </button>
+        `;
+      } else {
+        // Lấy ví đầu tiên đang kích hoạt
+        const primary = activeWallets[0];
+        const walletMeta = {
+          spay: { name: "SPayLater (...1234)", letter: "S", cls: "spay" },
+          momo: { name: "Ví Trả Sau MoMo", letter: "mo", cls: "momo" },
+          kredivo: { name: "Kredivo Trả Sau", letter: "K", cls: "kredivo" },
+          home: { name: "Home PayLater", letter: "H", cls: "home" }
+        }[primary];
+
+        dashWalletContainer.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="acc-icon ${walletMeta.cls}" style="width: 32px; height: 32px; font-size: 12px;">${walletMeta.letter}</div>
+            <div>
+              <div style="font-size: 13px; font-weight: 700;">${walletMeta.name}</div>
+              <div style="font-size: 11px; color: #10b981; font-weight: 600;">● Đã kết nối (${activeWallets.length} ví)</div>
+            </div>
+          </div>
+          <button style="border: none; background: #eff6ff; color: #2563eb; font-weight: 700; font-size: 11px; padding: 6px 12px; border-radius: 8px; cursor: pointer;" onclick="goToScreen('screen-shopee')">
+            Test Mua Hàng ➔
+          </button>
+        `;
+      }
+    }
+
+    function finishConnectAndGoToDashboard() {
+      const activeWallets = Object.keys(walletStates).filter(k => walletStates[k]);
+      if (activeWallets.length === 0) {
+        showInAppToast("Lưu ý", "Bạn vui lòng bấm chọn ít nhất 1 ví trả sau để Khiên An Toàn kích hoạt bảo vệ!", "⚠️");
+        return;
+      }
+      updateDashboardLinkedWallet();
+      showInAppToast("Kích hoạt thành công", `Đã liên kết và bảo vệ ${activeWallets.length} ví trả sau. Chào mừng bạn!`, "🛡️");
+      goToScreen('screen-dash');
+    }
+
+    // ================= MODAL ĐĂNG NHẬP =================
+    function openLoginModal() {
+      document.getElementById('loginModalOverlay').classList.add('active');
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModalOverlay').classList.remove('active');
+    }
+
+    function simulateLoginSuccess() {
+      closeLoginModal();
+      showInAppToast("Đăng nhập thành công", "Chào mừng bạn quay trở lại với Khiên An Toàn!", "👋");
+      goToScreen('screen-dash');
+    }
+
+    function goToScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById(screenId);
+      if (target) {
+        target.classList.add('active');
+        target.scrollTop = 0;
+      }
+      closePopup();
+      closeAddPlatformSheet();
+
+      // Kiểm soát hiển thị Bottom Nav: ẨN ở Onboarding và Shopee, HIỆN ở các màn còn lại
+      const bottomNav = document.querySelector('.bottom-nav');
+      if (screenId === 'screen-homescreen' || screenId === 'screen-onboarding' || screenId === 'screen-shopee' || screenId === 'screen-register') {
+        bottomNav.classList.add('hide-nav');
+      } else {
+        bottomNav.classList.remove('hide-nav');
+      }
+
+      // Cập nhật trạng thái active trên Bottom Nav
+      document.querySelectorAll('.bottom-nav .nav-btn').forEach(btn => btn.classList.remove('active'));
+      if (screenId === 'screen-dash') document.getElementById('navHome').classList.add('active');
+      else if (screenId === 'screen-history' || screenId === 'screen-order-detail') document.getElementById('navHistory').classList.add('active');
+      else if (screenId.includes('setting') || screenId === 'screen-affordability') document.getElementById('navSettings').classList.add('active');
+      else if (screenId === 'screen-connect') document.getElementById('navAccount').classList.add('active');
+
+      if (screenId === 'screen-homescreen') {
+        document.getElementById('statusBar').style.color = '#ffffff';
+      } else {
+        document.getElementById('statusBar').style.color = '#0f172a';
+      }
+      if (screenId === 'screen-history') {
+        renderTransactions();
+      }
+    }
+
+    function openAddPlatformSheet() {
+      document.getElementById('platformSheet').classList.add('active');
+    }
+    function closeAddPlatformSheet() {
+      document.getElementById('platformSheet').classList.remove('active');
+    }
+        function addNewPlatform(name, className, letter, desc) {
+      closeAddPlatformSheet();
+
+      // Kiểm tra xem đã có trong danh sách chưa
+      const list = document.getElementById('linkedPlatformsList');
+      const existing = Array.from(list.querySelectorAll('h4')).find(h => h.innerText.trim() === name);
+      if (existing) {
+        showInAppToast("Đã tồn tại", `Tài khoản ${name} đã được kết nối từ trước!`, "ℹ️");
+        return;
+      }
+
+      // 1. Thêm trực tiếp card vào màn hình Kết nối tài khoản (chuẩn v3)
+      const newCard = document.createElement('div');
+      newCard.className = 'account-card connected';
+      newCard.onclick = function() { connectPlatform(name); };
+      newCard.innerHTML = `
+        <div class="account-info">
+          <div class="acc-icon ${className}">${letter}</div>
+          <div class="acc-text">
+            <h4>${name}</h4>
+            <p>${desc}</p>
+          </div>
+        </div>
+        <div style="color: #10b981; font-size: 12px; font-weight: 700;">● Đã kết nối</div>
+      `;
+      list.appendChild(newCard);
+
+      // 2. Thêm tab lọc mới vào màn hình Lịch sử giao dịch
+      const tabs = document.getElementById('historyTabs');
+      if (tabs) {
+        const tabExists = Array.from(tabs.children).some(t => t.innerText.trim() === name);
+        if (!tabExists) {
+          const newTab = document.createElement('div');
+          newTab.className = 'filter-tab';
+          newTab.innerText = name;
+          newTab.onclick = function() { filterTransactions(name, this); };
+          tabs.appendChild(newTab);
+        }
+      }
+
+      // 3. Thông báo nội bộ app
+      showInAppToast("Đã thêm thành công", `Tài khoản ${name} đã được thêm vào danh sách mua trước trả sau!`, "✅");
+    }
+    function connectPlatform(name) {
+      showInAppToast("Trạng thái tài khoản", `${name} đang hoạt động và được Khiên bảo vệ.`, "ℹ️");
+    }
+
+    // ================= TẮT / MỞ LỚP BẢO VỆ =================
+    function updateShieldUI() {
+      const activeCount = Object.values(layersState).filter(Boolean).length;
+      const badge = document.getElementById('activeLayersBadge');
+      const masterSwitch = document.getElementById('masterSwitch');
+      const subText = document.getElementById('shieldSubText');
+
+      badge.innerText = `${activeCount}/3 lớp bật`;
+      if (activeCount === 0) {
+        badge.classList.add('disabled');
+        badge.innerText = 'Đã tắt bảo vệ';
+        masterSwitch.checked = false;
+        subText.innerText = '⚠️ Bạn đang không bật bảo vệ';
+      } else {
+        badge.classList.remove('disabled');
+        masterSwitch.checked = (activeCount === 3);
+        subText.innerText = 'Bạn đang được bảo vệ';
+      }
+
+      // Cập nhật card Ngưỡng
+      const cardTh = document.getElementById('cardThreshold');
+      const tagTh = document.getElementById('tagThreshold');
+      if (layersState.threshold) { cardTh.classList.remove('off'); tagTh.innerText = 'ON'; }
+      else { cardTh.classList.add('off'); tagTh.innerText = 'OFF'; }
+
+      // Cập nhật card Ngữ cảnh
+      const cardCtx = document.getElementById('cardContext');
+      const tagCtx = document.getElementById('tagContext');
+      if (layersState.context) { cardCtx.classList.remove('off'); tagCtx.innerText = 'ON'; }
+      else { cardCtx.classList.add('off'); tagCtx.innerText = 'OFF'; }
+
+      // Cập nhật card Tần suất
+      const cardFr = document.getElementById('cardFreq');
+      const tagFr = document.getElementById('tagFreq');
+      if (layersState.freq) { cardFr.classList.remove('off'); tagFr.innerText = 'ON'; }
+      else { cardFr.classList.add('off'); tagFr.innerText = 'OFF'; }
+    }
+
+    function toggleMasterShield(isOn) {
+      layersState.threshold = isOn;
+      layersState.context = isOn;
+      layersState.freq = isOn;
+      updateDashboardLinkedWallet();
+    updateShieldUI();
+    }
+
+    function toggleSingleLayer(layerKey) {
+      layersState[layerKey] = !layersState[layerKey];
+      updateDashboardLinkedWallet();
+    updateShieldUI();
+    }
+
+    // ================= TÍNH KHẢ NĂNG CHI TRẢ =================
+    function calculateAffordability() {
+      const income = Number(document.getElementById('inputIncome').value) || 0;
+      const expense = Number(document.getElementById('inputExpense').value) || 0;
+      const debt = Number(document.getElementById('inputDebt').value) || 0;
+      const bnplLoans = 1500000;
+
+      const leftAfterBills = Math.max(0, income - expense - debt - bnplLoans);
+      document.getElementById('displayLeftAfterBills').innerText = formatVND(leftAfterBills);
+
+      recommendedThresholdValue = Math.round((leftAfterBills * 0.20) / 50000) * 50000;
+      if (recommendedThresholdValue < 200000) recommendedThresholdValue = 200000;
+
+      document.getElementById('displayRecommendedThreshold').innerText = `Tối đa ${formatVND(recommendedThresholdValue)}/tháng`;
+    }
+
+    function applyRecommendedThreshold() {
+      currentThreshold = recommendedThresholdValue;
+      document.getElementById('thresholdSlider').value = currentThreshold;
+      document.getElementById('sliderValueText').innerText = formatVND(currentThreshold);
+      updateDashboardAmounts();
+      showInAppToast("Đã áp dụng hạn mức", `Áp dụng mức đề xuất ${formatVND(currentThreshold)}/tháng thành công!`, "💰");
+      goToScreen('screen-dash');
+    }
+
+    // ================= CÀI ĐẶT THANH KÉO HẠN MỨC =================
+    function onSliderChange(val) {
+      currentThreshold = Number(val);
+      document.getElementById('sliderValueText').innerText = formatVND(val);
+      document.querySelectorAll('.th-chip').forEach(c => c.classList.remove('selected'));
+      updateDashboardAmounts();
+    }
+
+    function quickSelectThreshold(val) {
+      currentThreshold = val;
+      document.getElementById('thresholdSlider').value = val;
+      document.getElementById('sliderValueText').innerText = formatVND(val);
+      document.querySelectorAll('.th-chip').forEach(c => c.classList.remove('selected'));
+      event.target.classList.add('selected');
+      updateDashboardAmounts();
+    }
+
+    function saveThresholdSetting() {
+      updateDashboardAmounts();
+      showInAppToast("Lưu thiết lập", `Hạn mức mua trước trả sau tháng này: ${formatVND(currentThreshold)}`, "💰");
+      goToScreen('screen-dash');
+    }
+
+    function saveContextSetting() {
+      showInAppToast("Lưu thiết lập", "Đã cập nhật chế độ bảo vệ ban đêm & mùa Sale!", "🌙");
+      goToScreen('screen-dash');
+    }
+
+    function saveFrequencySetting() {
+      showInAppToast("Lưu thiết lập", `Đã lưu: Tối đa ${maxAllowedOrders} đơn trong 2 giờ.`, "⚡");
+      goToScreen('screen-dash');
+    }
+
+    function adjustMaxOrders(delta) {
+      maxAllowedOrders = Math.max(1, Math.min(10, maxAllowedOrders + delta));
+      document.getElementById('maxOrdersVal').innerText = maxAllowedOrders;
+      document.getElementById('hintOrdersText').innerText = maxAllowedOrders;
+      document.getElementById('popupFreqSubText').innerText = `Bạn đã đặt ${maxAllowedOrders} đơn hàng liên tiếp trong thời gian ngắn (vượt giới hạn đã cài).`;
+    }
+
+    function updateDashboardAmounts() {
+      document.getElementById('dashThresholdDisplay').innerText = formatVND(currentThreshold);
+      const spent = 850000;
+      const remaining = Math.max(0, currentThreshold - spent);
+      document.getElementById('dashRemainingDisplay').innerText = formatVND(remaining);
+
+      const percent = Math.min(100, Math.round((spent / currentThreshold) * 100));
+      document.getElementById('dashProgressFill').style.width = percent + '%';
+
+      // Cập nhật popup cảnh báo
+      const itemPrice = 1063350;
+      const totalAfter = spent + itemPrice;
+      
+      const setThreshEl = document.getElementById('popupSetThresholdLight');
+      if (setThreshEl) {
+        setThreshEl.innerText = formatVND(currentThreshold);
+        document.getElementById('popupNewTxAmount').innerText = formatVND(itemPrice);
+        document.getElementById('popupMathSub').innerText = `${formatVND(spent)} + ${formatVND(itemPrice)}`;
+        document.getElementById('popupTotalAfterLight').innerText = formatVND(totalAfter);
+
+        document.getElementById('rcSetThreshold').innerText = formatVND(currentThreshold);
+        document.getElementById('rcNewTx').innerText = formatVND(itemPrice);
+        document.getElementById('rcTotalAfter').innerText = formatVND(totalAfter);
+
+        const overLimitBox = document.getElementById('overLimitWarningBox');
+        if (totalAfter > currentThreshold) {
+          overLimitBox.style.display = 'flex';
+          const overAmt = totalAfter - currentThreshold;
+          const overPct = Math.round((overAmt / currentThreshold) * 100);
+          document.getElementById('overLimitAmountText').innerText = `Vượt hạn mức ${formatVND(overAmt)}`;
+          document.getElementById('overLimitPercentText').innerText = `Vượt ${overPct}% so với hạn mức tháng này.`;
+        } else {
+          overLimitBox.style.display = 'none';
+        }
+      }
+    }
+
+    // ================= LỊCH SỬ GIAO DỊCH =================
+    function filterTransactions(filterKey, tabEl) {
+      currentFilter = filterKey;
+      document.querySelectorAll('#historyTabs .filter-tab').forEach(t => t.classList.remove('active'));
+      if (tabEl) tabEl.classList.add('active');
+      renderTransactions();
+    }
+
+    function renderTransactions() {
+      const container = document.getElementById('transactionListContainer');
+      container.innerHTML = '';
+
+      let filtered = transactionsData;
+      if (currentFilter !== 'all') {
+        filtered = transactionsData.filter(t => t.platform.toLowerCase() === currentFilter.toLowerCase());
+      }
+
+      filtered.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'tx-item';
+        div.onclick = function() { openOrderDetail(item); };
+        div.innerHTML = `
+          <div class="tx-left">
+            <div class="tx-logo ${item.logoClass}">${item.logoText}</div>
+            <div>
+              <div class="tx-name">${item.name}</div>
+              <div class="tx-time">${item.time} • ${item.platform}</div>
+            </div>
+          </div>
+          <div class="tx-right">
+            <div class="tx-price">${formatVND(item.price)}</div>
+            <div style="color: #94a3b8; font-size: 16px;">›</div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function openOrderDetail(item) {
+      document.getElementById('detOrderCode').innerText = `#${item.code}`;
+      document.getElementById('detProductThumb').innerText = item.thumb;
+      document.getElementById('detProductName').innerText = item.name;
+      document.getElementById('detProductSub').innerText = item.sub;
+      document.getElementById('detProductPrice').innerText = formatVND(item.price);
+      document.getElementById('detPlatform').innerText = `${item.appName} (${item.platform})`;
+      document.getElementById('detOrderTime').innerText = item.time;
+      document.getElementById('detOrderTotal').innerText = formatVND(item.price);
+      goToScreen('screen-order-detail');
+    }
+
+    // ================= POPUP & XÁC NHẬN RỦI RO =================
+    
+    // ================= FLOW BẢO VỆ THEO NGỮ CẢNH (ĐÊM MUỘN) =================
+    let selectedNightReason = "";
+
+    function openNightStep2() {
+      closePopup();
+      document.getElementById('nightStep2Screen').classList.add('active');
+      document.getElementById('btnNightStep2Continue').disabled = true;
+      document.querySelectorAll('.ctx-option-item').forEach(el => el.classList.remove('selected'));
+      document.querySelectorAll('input[name="nightReason"]').forEach(r => r.checked = false);
+    }
+
+    function selectNightReason(reason, el) {
+      selectedNightReason = reason;
+      document.querySelectorAll('.ctx-option-item').forEach(item => item.classList.remove('selected'));
+      el.classList.add('selected');
+      const radio = el.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+      document.getElementById('btnNightStep2Continue').disabled = false;
+    }
+
+    function openNightStep3() {
+      document.getElementById('nightStep2Screen').classList.remove('active');
+      document.getElementById('nightStep3Screen').classList.add('active');
+      document.getElementById('nightSelectedReasonText').innerText = selectedNightReason;
+      document.getElementById('nightConfirmCheckbox').checked = false;
+      document.getElementById('btnNightFinalConfirm').disabled = true;
+    }
+
+    function toggleNightFinalBtn(checked) {
+      document.getElementById('btnNightFinalConfirm').disabled = !checked;
+    }
+
+    function backToNightStep2() {
+      document.getElementById('nightStep3Screen').classList.remove('active');
+      document.getElementById('nightStep2Screen').classList.add('active');
+    }
+
+    function closeNightFlow() {
+      document.getElementById('nightStep2Screen').classList.remove('active');
+      document.getElementById('nightStep3Screen').classList.remove('active');
+      closePopup();
+    }
+
+    function confirmNightBypassAndPay() {
+      closeNightFlow();
+      showInAppToast("Thanh toán thành công", `Giao dịch đã được ghi nhận sau khi xác nhận: "${selectedNightReason}"`, "✅");
+      goToScreen('screen-history');
+    }
+
+    
+    // ================= FLOW BẢO VỆ THEO TẦN SUẤT =================
+    let selectedFreqReason = "";
+
+    function selectFreqReason(reason, el) {
+      selectedFreqReason = reason;
+      document.querySelectorAll('.freq-option-item').forEach(item => item.classList.remove('selected'));
+      el.classList.add('selected');
+      const radio = el.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+      validateFreqForm();
+    }
+
+    function validateFreqForm() {
+      const isChecked = document.getElementById('freqConfirmCheckbox').checked;
+      const btn = document.getElementById('btnFreqContinue');
+      if (selectedFreqReason && isChecked) {
+        btn.disabled = false;
+      } else {
+        btn.disabled = true;
+      }
+    }
+
+    function openFreqScreen() {
+      closePopup();
+      document.getElementById('freqFlowScreen').classList.add('active');
+      document.getElementById('freqConfirmCheckbox').checked = false;
+      document.getElementById('btnFreqContinue').disabled = true;
+      document.querySelectorAll('.freq-option-item').forEach(item => item.classList.remove('selected'));
+      document.querySelectorAll('input[name="freqReason"]').forEach(r => r.checked = false);
+      selectedFreqReason = "";
+    }
+
+    function closeFreqScreen() {
+      document.getElementById('freqFlowScreen').classList.remove('active');
+    }
+
+    function goToRecentOrders() {
+      closeFreqScreen();
+      goToScreen('screen-history');
+    }
+
+    function confirmFreqBypassAndPay() {
+      closeFreqScreen();
+      showInAppToast("Thanh toán thành công", `Giao dịch đã được ghi nhận sau khi xác nhận lý do: "${selectedFreqReason}"`, "✅");
+      goToScreen('screen-history');
+    }
+
+    function setProductScenario(type) {
+      currentScenario = type;
+      document.querySelectorAll('.btn-sim').forEach(b => b.classList.remove('active'));
+      const clock = document.getElementById('clockTime');
+      const img = document.getElementById('productImage');
+      const title = document.getElementById('productTitle');
+      const price = document.getElementById('productPrice');
+      const bPrice = document.getElementById('bottomPrice');
+
+      if (type === 'threshold') {
+        document.getElementById('btnScenTh').classList.add('active');
+        clock.innerText = '19:39';
+        img.innerText = '🧴';
+        title.innerText = 'Dưỡng chất giảm thâm nám và dưỡng sáng toàn diện La Roche-Posay Mela B3 serum 30ml';
+        price.innerText = '1.063.350₫';
+        bPrice.innerText = '1.063.350₫';
+      } else if (type === 'night') {
+        document.getElementById('btnScenNight').classList.add('active');
+        clock.innerText = '23:30';
+        img.innerText = '✨';
+        title.innerText = "Tinh chất thu nhỏ lỗ chân lông & làm sáng da Paula's Choice 10% Niacinamide Booster 20ml";
+        price.innerText = '450.000₫';
+        bPrice.innerText = '450.000₫';
+        document.getElementById('nightPopupPriceDisplay').innerText = '450.000₫';
+        document.getElementById('nightStep2Price').innerText = '450.000₫';
+        document.getElementById('nightStep3Price').innerText = '450.000₫';
+      } else if (type === 'freq') {
+        document.getElementById('btnScenFreq').classList.add('active');
+        clock.innerText = '18:28';
+        img.innerText = '👁️';
+        title.innerText = 'LENS 1 NGÀY cận LENS XOẮN kính áp tròng tự nhiên đi học đi chơi';
+        price.innerText = '450.000₫';
+        bPrice.innerText = '450.000₫';
+        document.getElementById('freqOrderPriceDisplay').innerText = '450.000₫';
+      }
+    }
+
+    function triggerCheckout() {
+      if (currentScenario === 'threshold') {
+        if (!layersState.threshold) {
+          showInAppToast("Thanh toán thành công", "Lớp Ngưỡng chi tiêu đang TẮT. Đơn hàng đã duyệt!", "✅");
+          return;
+        }
+        document.getElementById('popup-threshold').classList.add('active');
+      } else if (currentScenario === 'night') {
+        if (!layersState.context) {
+          showInAppToast("Thanh toán thành công", "Lớp Ngữ cảnh đang TẮT. Đơn hàng đã duyệt!", "✅");
+          return;
+        }
+        document.getElementById('popup-night').classList.add('active');
+      } else if (currentScenario === 'freq') {
+        if (!layersState.freq) {
+          showInAppToast("Thanh toán thành công", "Lớp Tần suất đang TẮT. Đơn hàng đã duyệt!", "✅");
+          return;
+        }
+        openFreqScreen();
+      }
+    }
+
+    function closePopup() {
+      document.querySelectorAll('.popup-overlay').forEach(p => p.classList.remove('active'));
+      const f = document.getElementById('freqFlowScreen'); if(f) f.classList.remove('active');
+    }
+
+    function openRiskConfirm() {
+      document.getElementById('riskConfirmScreen').classList.add('active');
+      document.getElementById('riskConfirmCheckbox').checked = false;
+      toggleConfirmBtn(false);
+    }
+
+    function closeRiskConfirm() {
+      document.getElementById('riskConfirmScreen').classList.remove('active');
+    }
+
+    function toggleConfirmBtn(isChecked) {
+      const btn = document.getElementById('btnFinalConfirm');
+      if (isChecked) btn.classList.add('enabled');
+      else btn.classList.remove('enabled');
+    }
+
+    function confirmBypassAndPay() {
+      alert(`✅ Đã ghi nhận xác nhận của bạn!\nBạn đã xác nhận muốn tiếp tục dù giao dịch vượt hạn mức tháng này. Hệ thống sẽ kiểm tra các điều kiện bảo vệ còn lại trước khi thanh toán.`);
+      closeRiskConfirm();
+      closePopup();
+      goToScreen('screen-history');
+    }
+
+    // Khởi tạo
+    updateDashboardLinkedWallet();
+    updateShieldUI();
+    updateDashboardAmounts();
+    calculateAffordability();
+    renderTransactions();
+  </script>
+</body>
+</html>
